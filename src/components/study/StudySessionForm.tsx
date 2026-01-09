@@ -110,7 +110,7 @@ export function StudySessionForm() {
       setValue('end_time', end.toTimeString().slice(0, 5));
     }
   };
-  
+
   const duration = calculateDuration(startTime, endTime);
 
   const onSubmit = async (data: FormData) => {
@@ -182,7 +182,6 @@ export function StudySessionForm() {
             {errors.subject_id && (
               <p className="text-sm text-destructive">{errors.subject_id.message}</p>
             )}
-            {subjects.length === 0 && (
               <Button
                 type="button"
                 variant="outline"
@@ -193,7 +192,6 @@ export function StudySessionForm() {
                 <Plus className="h-4 w-4 mr-1" />
                 Cadastrar matéria
               </Button>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -225,11 +223,13 @@ export function StudySessionForm() {
               <Label>Registrar Tempo de Estudo</Label>
               <div className='space-x-2'>
                 <Button
+                  variant={timeRegisterType === 'manual' ? 'default' : 'outline'}
                   onClick={() => setTimeRegisterType('manual')}
                 >
                   Manualmente
                 </Button>
                 <Button
+                  variant={timeRegisterType === 'cronometer' ? 'default' : 'outline'}
                   onClick={() => setTimeRegisterType('cronometer')}
                 >
                   Cronometrar

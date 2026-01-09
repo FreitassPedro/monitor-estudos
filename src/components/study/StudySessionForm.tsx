@@ -69,7 +69,7 @@ export function StudySessionForm() {
 
   const onSubmit = async (data: FormData) => {
     const durationMinutes = calculateDuration(data.start_time, data.end_time);
-    
+
     if (durationMinutes <= 0) {
       toast.error('A hora de fim deve ser maior que a hora de início');
       return;
@@ -122,8 +122,8 @@ export function StudySessionForm() {
                   subjects.map((subject) => (
                     <SelectItem key={subject.id} value={subject.id}>
                       <div className="flex items-center gap-2">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
+                        <div
+                          className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: subject.color }}
                         />
                         {subject.name}
@@ -137,10 +137,10 @@ export function StudySessionForm() {
               <p className="text-sm text-destructive">{errors.subject_id.message}</p>
             )}
             {subjects.length === 0 && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 onClick={() => navigate('/materias')}
                 className="mt-2"
               >
@@ -184,9 +184,9 @@ export function StudySessionForm() {
                   {...register('start_time')}
                   className="flex-1"
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   size="icon"
                   onClick={() => setCurrentTime('start_time')}
                   title="Agora"
@@ -208,9 +208,9 @@ export function StudySessionForm() {
                   {...register('end_time')}
                   className="flex-1"
                 />
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   size="icon"
                   onClick={() => setCurrentTime('end_time')}
                   title="Agora"
@@ -222,8 +222,9 @@ export function StudySessionForm() {
                 <p className="text-sm text-destructive">{errors.end_time.message}</p>
               )}
             </div>
-          </div>
 
+
+          </div>
           {duration > 0 && (
             <div className="p-3 bg-accent/50 rounded text-sm">
               <span className="text-muted-foreground">Duração: </span>
@@ -257,7 +258,7 @@ export function StudySessionForm() {
                 Criar tarefa vinculada a esta sessão
               </Label>
             </div>
-            
+
             {createTodoAfter && (
               <Input
                 placeholder="Ex: Fazer exercícios deste capítulo"
@@ -268,16 +269,16 @@ export function StudySessionForm() {
           </div>
 
           <div className="flex gap-3">
-            <Button 
-              type="button" 
-              variant="outline" 
+            <Button
+              type="button"
+              variant="outline"
               onClick={() => navigate(-1)}
               className="flex-1"
             >
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={createStudyLog.isPending}
               className="flex-1"
             >

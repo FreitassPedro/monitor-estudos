@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -35,6 +35,10 @@ export function StudySessionForm() {
   const [createTodoAfter, setCreateTodoAfter] = useState(false);
   const [todoDescription, setTodoDescription] = useState('');
 
+  const [isCronometerOpen, setIsCronometerOpen] = useState(false);
+  const [cronometerTime, setCronometerTime] = useState(0);
+  const [isCronometerRunning, setIsCronometerRunning] = useState(false);
+
   const today = new Date().toISOString().split('T')[0];
   const now = new Date().toTimeString().slice(0, 5);
 
@@ -52,6 +56,30 @@ export function StudySessionForm() {
   const startTime = watch('start_time');
   const endTime = watch('end_time');
 
+  const formatCronometerTime = (seconds: number) => {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    const twoDigits = (n: number) => n.toString().padStart(2, '0');
+    return `${twoDigits(hrs)}:${twoDigits(mins)}:${twoDigits(secs)}`;
+  };
+
+  useEffect(() => {
+    let interval: number | undefined;
+
+    if (isCronometerRunning) {
+      interval = window.setInterval(() => {
+        setCronometerTime((prev) => prev + 1);
+      }, 1000);
+    }
+
+    return () => {
+      if (interval !== undefined) {
+        window.clearInterval(interval);
+      }
+    };
+  }, [isCronometerRunning]);
+
   const calculateDuration = (start: string, end: string): number => {
     if (!start || !end) return 0;
     const [startH, startM] = start.split(':').map(Number);
@@ -67,6 +95,7 @@ export function StudySessionForm() {
     setValue(field, now);
   };
 
+    
   const onSubmit = async (data: FormData) => {
     const durationMinutes = calculateDuration(data.start_time, data.end_time);
 
@@ -222,9 +251,60 @@ export function StudySessionForm() {
                 <p className="text-sm text-destructive">{errors.end_time.message}</p>
               )}
             </div>
-
-
+            <div>
+              <Button
+                type="button"
+                onClick={() => {
+                  setIsCronometerOpen(true);
+                  setIsCronometerRunning(false);
+                  setCronometerTime(0);
+                }}
+              >
+                Cronometrar
+              </Button>
+            </div>
           </div>
+          {isCronometerOpen && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Cronômetro de Estudo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="text-3xl font-mono">
+                    {formatCronometerTime(cronometerTime)}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={isCronometerRunning ? 'outline' : 'default'}
+                      onClick={() => setIsCronometerRunning((prev) => !prev)}
+                    >
+                      {isCronometerRunning ? 'Pausar' : 'Iniciar'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCronometerTime(0)}
+                    >
+                      Zerar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsCronometerRunning(false);
+                        setIsCronometerOpen(false);
+                        setCronometerTime(0);
+                      }}
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
           {duration > 0 && (
             <div className="p-3 bg-accent/50 rounded text-sm">
               <span className="text-muted-foreground">Duração: </span>
@@ -287,6 +367,6 @@ export function StudySessionForm() {
           </div>
         </form>
       </CardContent>
-    </Card>
+    </Card >
   );
 }

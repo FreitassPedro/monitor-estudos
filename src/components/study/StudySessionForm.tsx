@@ -35,12 +35,14 @@ export function StudySessionForm() {
   const [createTodoAfter, setCreateTodoAfter] = useState(false);
   const [todoDescription, setTodoDescription] = useState('');
 
-  const [isCronometerOpen, setIsCronometerOpen] = useState(false);
+  const [timeRegisterType, setTimeRegisterType] = useState<'manual' | 'cronometer'>('manual');
   const [cronometerTime, setCronometerTime] = useState(0);
   const [isCronometerRunning, setIsCronometerRunning] = useState(false);
 
   const today = new Date().toISOString().split('T')[0];
   const now = new Date().toTimeString().slice(0, 5);
+
+
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -89,13 +91,28 @@ export function StudySessionForm() {
     return Math.max(0, endMinutes - startMinutes);
   };
 
-  const duration = calculateDuration(startTime, endTime);
+
 
   const setCurrentTime = (field: 'start_time' | 'end_time') => {
     setValue(field, now);
   };
 
-    
+  const startTiming = () => {
+    const now = new Date();
+    if (!isCronometerRunning) {
+      // Starting the timer
+      setValue('start_time', now.toTimeString().slice(0, 5));
+      setIsCronometerRunning(true);
+    } else {
+      // Stopping the timer
+      setIsCronometerRunning(false);
+      const end = new Date(now.getTime() + cronometerTime * 1000);
+      setValue('end_time', end.toTimeString().slice(0, 5));
+    }
+  };
+  
+  const duration = calculateDuration(startTime, endTime);
+
   const onSubmit = async (data: FormData) => {
     const durationMinutes = calculateDuration(data.start_time, data.end_time);
 
@@ -191,7 +208,7 @@ export function StudySessionForm() {
             )}
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="study_date">Data</Label>
               <Input
@@ -205,11 +222,70 @@ export function StudySessionForm() {
             </div>
 
             <div className="space-y-2">
+              <Label>Registrar Tempo de Estudo</Label>
+              <div className='space-x-2'>
+                <Button
+                  onClick={() => setTimeRegisterType('manual')}
+                >
+                  Manualmente
+                </Button>
+                <Button
+                  onClick={() => setTimeRegisterType('cronometer')}
+                >
+                  Cronometrar
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {timeRegisterType === 'cronometer' && (
+            < Card >
+              <CardHeader>
+                <CardTitle>Cronômetro de Estudo</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center gap-4">
+                  <div className="text-3xl font-mono">
+                    {formatCronometerTime(cronometerTime)}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant={isCronometerRunning ? 'outline' : 'default'}
+                      onClick={() => startTiming()}
+                    >
+                      {isCronometerRunning ? 'Parar' : 'Iniciar'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCronometerTime(0)}
+                    >
+                      Zerar
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setIsCronometerRunning(false);
+                        setCronometerTime(0);
+                      }}
+                    >
+                      Fechar
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card >
+          )}
+          <div className='grid grid-cols-2 gap-4'>
+            <div className="space-y-2" >
               <Label htmlFor="start_time">Hora Início</Label>
               <div className="flex gap-2">
                 <Input
                   id="start_time"
                   type="time"
+                  disabled={timeRegisterType === 'cronometer'}
                   {...register('start_time')}
                   className="flex-1"
                 />
@@ -234,6 +310,7 @@ export function StudySessionForm() {
                 <Input
                   id="end_time"
                   type="time"
+                  disabled={timeRegisterType === 'cronometer'}
                   {...register('end_time')}
                   className="flex-1"
                 />
@@ -251,60 +328,9 @@ export function StudySessionForm() {
                 <p className="text-sm text-destructive">{errors.end_time.message}</p>
               )}
             </div>
-            <div>
-              <Button
-                type="button"
-                onClick={() => {
-                  setIsCronometerOpen(true);
-                  setIsCronometerRunning(false);
-                  setCronometerTime(0);
-                }}
-              >
-                Cronometrar
-              </Button>
-            </div>
           </div>
-          {isCronometerOpen && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Cronômetro de Estudo</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center gap-4">
-                  <div className="text-3xl font-mono">
-                    {formatCronometerTime(cronometerTime)}
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant={isCronometerRunning ? 'outline' : 'default'}
-                      onClick={() => setIsCronometerRunning((prev) => !prev)}
-                    >
-                      {isCronometerRunning ? 'Pausar' : 'Iniciar'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setCronometerTime(0)}
-                    >
-                      Zerar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setIsCronometerRunning(false);
-                        setIsCronometerOpen(false);
-                        setCronometerTime(0);
-                      }}
-                    >
-                      Fechar
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+
+
           {duration > 0 && (
             <div className="p-3 bg-accent/50 rounded text-sm">
               <span className="text-muted-foreground">Duração: </span>

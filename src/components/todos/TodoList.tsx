@@ -15,7 +15,7 @@ import {
 import type { StudyLog } from '@/types/database';
 import { Label } from '@radix-ui/react-label';
 import { Select, SelectContent, SelectValue, SelectTrigger, SelectItem } from '../ui/select';
-import { MasterTask, SubTask } from '@/types/tasks';
+import { MasterTask, SubTask, Task } from '@/types/tasks';
 import { group } from 'console';
 
 
@@ -98,21 +98,9 @@ export function TodoList({ selectedProject }: TodoListProps) {
 
   const [newDescription, setNewDescription] = useState('');
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
-  const [viewingTask, setViewingTask] = useState<string | null>(null);
+  const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
   const [viewingForm, setViewingForm] = useState<boolean>(false);
-
-  const viewingTaskTest = {
-    id: '1',
-    study_date: '2024-06-20',
-    content: 'Estudar termodinâmica',
-    notes: 'Rever os conceitos de energia e trabalho',
-    subjects: {
-      id: 'subj1',
-      name: 'Física',
-      color: '#FF5733',
-    },
-  };
 
   const subTask1: SubTask = {
     id: 'st1',
@@ -204,7 +192,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
         {mockData.masterTasks.map((masterTask) => (
           <div className='border p-4'>
             <div
-              onClick={() => setViewingTask(masterTask.id)}
+              onClick={() => setViewingTask(masterTask)}
               className='py-1 text-lg flex flex-row items-center gap-2 border-t border-b'>
               <Checkbox />
               <div className='flex justify-between w-full'>
@@ -237,6 +225,81 @@ export function TodoList({ selectedProject }: TodoListProps) {
         ))}
       </CardContent >
     </Card >
+  );
+
+  const renderTaskDialog = (masterTask: MasterTask) => (
+    <Dialog open={!!viewingTask} onOpenChange={() => setViewingTask(null)}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Contexto da Sessão de Estudo</DialogTitle>
+        </DialogHeader>
+        {masterTask && (
+          <div className='flex flex-row gap-6'>
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: '#000' }}
+                />
+                <span className="font-medium">{masterTask.name}</span>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Titulo</p>
+                <p className="text-foreground">{masterTask.name}</p>
+              </div>
+
+              {masterTask.description && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Descrição</p>
+                  <p className="text-foreground whitespace-pre-wrap">{masterTask.description}</p>
+                </div>
+              )}
+              <div>
+                <p>Evento vinculado</p>
+                <div className="p-2 bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground text-sm mt-2">
+                  Sessão de estudo em 20/06/2024, das 14:00 às 16:00
+                </div>
+              </div>
+              <div>
+                <p>Sub-tarefas:</p>
+                <div className="px-4 text-sm py bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground justify-center items-center flex">
+                  <Checkbox className="mr-2" />
+                  R1 - Releitura: Rever os conceitos de energia e trabalho
+                </div>
+                <div className="px-4 text-sm py bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground justify-center items-center flex">
+                  <Checkbox className="mr-2" />
+                  R1 - Releitura: Rever os conceitos de energia e trabalho
+                </div>
+              </div>
+              <div>
+                <p>Comentar:</p>
+                <Input type="text" />
+              </div>
+            </div>
+            <div className='bg-zinc-200/40 space-y-4 p-2'>
+              <div>
+                <p className="text-sm text-muted-foreground">Projeto:</p>
+                <p className="text-foreground text-sm">
+                  #Fisica/Revisao
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Criado:</p>
+                <p className="text-foreground text-sm">
+                  {new Date(masterTask.created_at).toLocaleDateString('pt-BR')}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Tags:</p>
+                <p className="text-foreground text-sm">
+                  #revisao
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog >
   );
 
 
@@ -310,7 +373,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
           </div>
         ))}
       </div>
-     
+
 
       {
         completedTodos.length > 0 && (
@@ -327,78 +390,9 @@ export function TodoList({ selectedProject }: TodoListProps) {
         )
       }
 
-      <Dialog open={!!viewingTask} onOpenChange={() => setViewingTask(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Contexto da Sessão de Estudo</DialogTitle>
-          </DialogHeader>
-          {viewingTask && (
-            <div className='flex flex-row gap-6'>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: viewingTaskTest.subjects?.color }}
-                  />
-                  <span className="font-medium">{viewingTaskTest.subjects?.name}</span>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Titulo</p>
-                  <p className="text-foreground">{viewingTaskTest.content}</p>
-                </div>
-
-                {viewingTaskTest.notes && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Descrição</p>
-                    <p className="text-foreground whitespace-pre-wrap">{viewingTaskTest.notes}</p>
-                  </div>
-                )}
-                <div>
-                  <p>Evento vinculado</p>
-                  <div className="p-2 bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground text-sm mt-2">
-                    Sessão de estudo em 20/06/2024, das 14:00 às 16:00
-                  </div>
-                </div>
-                <div>
-                  <p>Sub-tarefas:</p>
-                  <div className="px-4 text-sm py bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground justify-center items-center flex">
-                    <Checkbox className="mr-2" />
-                    R1 - Releitura: Rever os conceitos de energia e trabalho
-                  </div>
-                  <div className="px-4 text-sm py bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground justify-center items-center flex">
-                    <Checkbox className="mr-2" />
-                    R1 - Releitura: Rever os conceitos de energia e trabalho
-                  </div>
-                </div>
-                <div>
-                  <p>Comentar:</p>
-                  <Input type="text" />
-                </div>
-              </div>
-              <div className='bg-zinc-200/40 space-y-4 p-2'>
-                <div>
-                  <p className="text-sm text-muted-foreground">Projeto:</p>
-                  <p className="text-foreground text-sm">
-                    #Fisica/Revisao
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Criado:</p>
-                  <p className="text-foreground text-sm">
-                    {new Date(viewingTaskTest.study_date).toLocaleDateString('pt-BR')}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Tags:</p>
-                  <p className="text-foreground text-sm">
-                    #revisao
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog >
+      {
+        viewingTask && renderTaskDialog(viewingTask as MasterTask)
+      }
 
       <Dialog open={viewingForm} onOpenChange={() => setViewingForm(false)}>
         <DialogContent className="max-w-lg">

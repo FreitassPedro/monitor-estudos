@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,6 +95,31 @@ const mockData: mockData[] = [
       ],
     },
   },
+  {
+    project: {
+      id: 'p2',
+      name: 'Matemática',
+      color: '#33FF57',
+      created_at: '2024-06-12',
+      groups: [
+        {
+          id: 'g2',
+          name: 'Prática',
+          created_at: '2024-06-13',
+          tasks: [
+            {
+              id: 'mt3',
+              title: 'Resolver exercícios de cálculo',
+              description: 'Focar em integrais e derivadas',
+              completed: false,
+              created_at: '2024-06-17',
+              updated_at: '2024-06-17',
+            },
+          ],
+        },
+      ],
+    },
+  }
 ];
 
 interface TodoListProps {
@@ -113,29 +138,37 @@ export function TodoList({ selectedProject }: TodoListProps) {
   const toggleTodo = useToggleTodo();
   const deleteTodo = useDeleteTodo();
 
-  const project = mockData[0].project;
+  const projects = ['todo', 'today', 'fisica', 'matematica'];
+  const [project, setProject] = useState<Project>(mockData[0].project);
 
-  const projects = ['todo', 'today', 'project1', 'project2'];
-
-  const [newDescription, setNewDescription] = useState('');
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
   const [viewingForm, setViewingForm] = useState<boolean>(false);
 
-  const subTask1: SubTask = {
-    id: 'st1',
-    masterTaskId: 'mt1',
-    title: 'R1 - Releitura',
-    completed: false,
-    created_at: '2024-06-15',
-    updated_at: '2024-06-15',
-  }
-
   const pendingTodos = todos.filter((t) => !t.completed);
   const completedTodos = todos.filter((t) => t.completed);
 
   const { handleSubmit } = useForm<formData>();
+
+  const onChangeProject = (projectName: string) => {
+    const normalize = (str: string) =>
+      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+    const foundProject = mockData.find((p) =>
+      normalize(p.project.name) === normalize(projectName)
+    );
+
+    if (foundProject) {
+      setProject(foundProject.project);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedProject) {
+      onChangeProject(selectedProject);
+    }
+  }, [selectedProject]);
 
   const onSubmit = async (data: formData) => {
     console.log('Creating todo:', data);
@@ -231,7 +264,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
                 </div>
               </div>
             </div>
-            {masterTask.subTasks.map((subTask) => (
+            {masterTask.subTasks && masterTask.subTasks.map((subTask) => (
               <div className='px-4'>
                 <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
                   <Checkbox />
@@ -348,7 +381,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
         <h1 className="text-2xl font-bold text-foreground mb-6">Gerenciar Tarefas</h1>
         <div>
           <Label htmlFor="">Selecionar projeto</Label>
-          <Select>
+          <Select onValueChange={onChangeProject}>
             <SelectTrigger>
               <SelectValue placeholder="Selecione um projeto" />
             </SelectTrigger>

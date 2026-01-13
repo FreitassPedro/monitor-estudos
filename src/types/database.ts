@@ -35,6 +35,7 @@ export interface CreateSubjectInput {
 }
 
 export interface CreateStudyLogInput {
+  id?: string;
   subject_id: string;
   content: string;
   study_date: string;

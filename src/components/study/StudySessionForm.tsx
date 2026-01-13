@@ -135,7 +135,7 @@ export function StudySessionForm() {
       if (createTodoAfter && todoDescription.trim()) {
         await createTodo.mutateAsync({
           description: todoDescription.trim(),
-          study_log_id: studyLog.id,
+          study_log_id: 0,
         });
       }
 
@@ -143,6 +143,7 @@ export function StudySessionForm() {
       navigate('/historico');
     } catch (error) {
       toast.error('Erro ao registrar sessão');
+      console.error(error);
     }
   };
 
@@ -182,16 +183,16 @@ export function StudySessionForm() {
             {errors.subject_id && (
               <p className="text-sm text-destructive">{errors.subject_id.message}</p>
             )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/materias')}
-                className="mt-2"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Cadastrar matéria
-              </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/materias')}
+              className="mt-2"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Cadastrar matéria
+            </Button>
           </div>
 
           <div className="space-y-2">
@@ -255,13 +256,6 @@ export function StudySessionForm() {
                       onClick={() => startTiming()}
                     >
                       {isCronometerRunning ? 'Parar' : 'Iniciar'}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setCronometerTime(0)}
-                    >
-                      Zerar
                     </Button>
                     <Button
                       type="button"
@@ -351,6 +345,14 @@ export function StudySessionForm() {
             {errors.notes && (
               <p className="text-sm text-destructive">{errors.notes.message}</p>
             )}
+          </div>
+          <div className="space-y-2">
+            <Label>Tags</Label>
+            <Input
+              placeholder="Ex: Prova, Revisão, Exercícios..."
+
+            >
+            </Input>
           </div>
 
           <div className="space-y-3 p-4 border border-border rounded">

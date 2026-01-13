@@ -19,7 +19,7 @@ export function TodoList() {
   const createTodo = useCreateTodo();
   const toggleTodo = useToggleTodo();
   const deleteTodo = useDeleteTodo();
-  
+
   const [newDescription, setNewDescription] = useState('');
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
 
@@ -28,7 +28,7 @@ export function TodoList() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newDescription.trim()) {
       toast.error('Digite a descrição da tarefa');
       return;
@@ -61,9 +61,8 @@ export function TodoList() {
   const renderTodoItem = (todo: typeof todos[0]) => (
     <div
       key={todo.id}
-      className={`flex items-start gap-3 p-3 border border-border rounded ${
-        todo.completed ? 'opacity-60' : ''
-      }`}
+      className={`flex items-start gap-3 p-3 border border-border rounded ${todo.completed ? 'opacity-60' : ''
+        }`}
     >
       <Checkbox
         checked={todo.completed}
@@ -149,20 +148,47 @@ export function TodoList() {
         </CardContent>
       </Card>
 
-      {completedTodos.length > 0 && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Concluídas ({completedTodos.length})</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {completedTodos.map(renderTodoItem)}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Grupo 1</CardTitle>
+        </CardHeader>
+        <CardContent className='flex flex-col gap-4'>
+          <div className='border border-green-500 p-4'>
+            <div className='text-xl'>Física</div>
+            <div>
+              <div className='text-lg'>- Resolver lista de exercícios</div>
+              <div className='text-lg'>- Revisar capítulo 3 do livro</div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+          <div className='border border-blue-500 p-4'>
+            <div className='text-xl'>Geografia</div>
+            <div>
+              <div className='text-lg'>
+                <Checkbox checked={true} className="mr-2" />
+                Resolver lista de exercícios</div>
+              <div className='text-lg'>- Revisar capítulo 3 do livro</div>
+            </div>
+          </div>
+        </CardContent >
+      </Card >
 
-      <Dialog open={!!viewingLog} onOpenChange={() => setViewingLog(null)}>
+      {
+        completedTodos.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Concluídas ({completedTodos.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {completedTodos.map(renderTodoItem)}
+              </div>
+            </CardContent>
+          </Card>
+        )
+      }
+
+      < Dialog open={!!viewingLog
+      } onOpenChange={() => setViewingLog(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Contexto da Sessão de Estudo</DialogTitle>
@@ -195,7 +221,7 @@ export function TodoList() {
             </div>
           )}
         </DialogContent>
-      </Dialog>
+      </Dialog >
     </>
   );
 }

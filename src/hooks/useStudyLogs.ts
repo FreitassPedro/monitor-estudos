@@ -65,15 +65,10 @@ export function useDeleteStudyLog() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('study_logs')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      localDb.delete('study_logs', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['study_logs'] });
-    },
-  });
+    }
+  })
 }

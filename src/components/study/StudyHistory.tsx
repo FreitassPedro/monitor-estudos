@@ -29,7 +29,7 @@ interface GroupedLogs {
 export function StudyHistory() {
   const { data: logs = [], isLoading } = useStudyLogs();
   const deleteStudyLog = useDeleteStudyLog();
-  
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
@@ -44,7 +44,7 @@ export function StudyHistory() {
     return acc;
   }, {});
 
-  const sortedDates = Object.keys(groupedLogs).sort((a, b) => 
+  const sortedDates = Object.keys(groupedLogs).sort((a, b) =>
     new Date(b).getTime() - new Date(a).getTime()
   );
 
@@ -81,13 +81,13 @@ export function StudyHistory() {
     const date = new Date(dateStr + 'T00:00:00');
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     const diff = today.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
+
     if (days === 0) return 'Hoje';
     if (days === 1) return 'Ontem';
-    
+
     return date.toLocaleDateString('pt-BR', {
       weekday: 'long',
       day: 'numeric',
@@ -144,7 +144,7 @@ export function StudyHistory() {
 
           return (
             <Card key={date}>
-              <CardHeader 
+              <CardHeader
                 className="cursor-pointer hover:bg-accent/50 transition-colors"
                 onClick={() => toggleDate(date)}
               >
@@ -167,7 +167,7 @@ export function StudyHistory() {
                   </div>
                 </div>
               </CardHeader>
-              
+
               {isExpanded && (
                 <CardContent className="pt-0">
                   <div className="space-y-3">
@@ -236,7 +236,7 @@ export function StudyHistory() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir sessão de estudo?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. As tarefas vinculadas permanecerão, 
+              Esta ação não pode ser desfeita. As tarefas vinculadas permanecerão,
               mas perderão o link com esta sessão.
             </AlertDialogDescription>
           </AlertDialogHeader>

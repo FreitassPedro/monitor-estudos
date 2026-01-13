@@ -26,14 +26,14 @@ export function SubjectManager() {
   const { data: subjects = [], isLoading } = useSubjects();
   const createSubject = useCreateSubject();
   const deleteSubject = useDeleteSubject();
-  
+
   const [newName, setNewName] = useState('');
   const [newColor, setNewColor] = useState(PRESET_COLORS[0]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newName.trim()) {
       toast.error('Digite o nome da matéria');
       return;
@@ -49,6 +49,7 @@ export function SubjectManager() {
       toast.success('Matéria criada!');
     } catch (error: any) {
       toast.error('Erro ao criar matéria');
+      console.error(error.message);
     }
   };
 
@@ -96,9 +97,8 @@ export function SubjectManager() {
                     key={color}
                     type="button"
                     onClick={() => setNewColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                      newColor === color ? 'border-foreground scale-110' : 'border-transparent'
-                    }`}
+                    className={`w-8 h-8 rounded-full border-2 transition-transform ${newColor === color ? 'border-foreground scale-110' : 'border-transparent'
+                      }`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -161,7 +161,7 @@ export function SubjectManager() {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir matéria?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. Se houver sessões de estudo vinculadas, 
+              Esta ação não pode ser desfeita. Se houver sessões de estudo vinculadas,
               a exclusão não será permitida.
             </AlertDialogDescription>
           </AlertDialogHeader>

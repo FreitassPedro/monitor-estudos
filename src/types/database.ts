@@ -1,3 +1,6 @@
+import Tasks from "@/pages/Tasks";
+import { Task } from "./tasks";
+
 export interface Subject {
   id: string;
   name: string;
@@ -45,7 +48,9 @@ export interface CreateStudyLogInput {
   notes?: string;
 }
 
-export interface CreateTodoInput {
+export interface CreateTaskInput extends Partial<Task> {
+  id: string;
+  title: string;
   description: string;
-  study_log_id?: string;
+  event_id?: string;
 }

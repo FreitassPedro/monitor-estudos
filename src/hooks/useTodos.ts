@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Todo, CreateTodoInput } from '@/types/database';
+import type { Todo, CreateTaskInput } from '@/types/database';
+import { localDb } from '@/lib/localDb';
 
 export function useTodos() {
   return useQuery({
@@ -40,26 +41,21 @@ export function usePendingTodos(limit?: number) {
   });
 }
 
-export function useCreateTodo() {
+
+export function useCreateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: CreateTodoInput) => {
-      const { data, error } = await supabase
-        .from('todos')
-        .insert(input)
-        .select('*, study_logs(*, subjects(*))')
-        .single();
+    mutationFn: async (input: CreateTaskInput) => {
+      localDb.insert<CreateTaskInput>('tasks', input);
 
-      if (error) throw error;
-      return data as Todo;
+      return input;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
-  });
+  })
 }
-
 export function useToggleTodo() {
   const queryClient = useQueryClient();
 

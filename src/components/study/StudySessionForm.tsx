@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useCreateStudyLog } from '@/hooks/useStudyLogs';
-import { useCreateTodo } from '@/hooks/useTodos';
+import { useCreateTask } from '@/hooks/useTodos';
 import { toast } from 'sonner';
 import { Clock, Plus } from 'lucide-react';
 
@@ -31,7 +31,7 @@ export function StudySessionForm() {
   const navigate = useNavigate();
   const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
   const createStudyLog = useCreateStudyLog();
-  const createTodo = useCreateTodo();
+  const createTask = useCreateTask();
   const [createTodoAfter, setCreateTodoAfter] = useState(false);
   const [todoDescription, setTodoDescription] = useState('');
 
@@ -41,8 +41,6 @@ export function StudySessionForm() {
 
   const today = new Date().toISOString().split('T')[0];
   const now = new Date().toTimeString().slice(0, 5);
-
-
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -133,9 +131,11 @@ export function StudySessionForm() {
       });
 
       if (createTodoAfter && todoDescription.trim()) {
-        await createTodo.mutateAsync({
+        await createTask.mutateAsync({
+          id: crypto.randomUUID(),
+          title: `Tarefa da sessão de estudo: ${data.content}`,
           description: todoDescription.trim(),
-          study_log_id: 0,
+          event_id: undefined,
         });
       }
 

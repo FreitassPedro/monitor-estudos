@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useTodos, useCreateTodo, useToggleTodo, useDeleteTodo } from '@/hooks/useTodos';
+import { useTodos, useToggleTodo, useDeleteTodo, useCreateTask } from '@/hooks/useTodos';
 import { toast } from 'sonner';
 import { Plus, Trash2, FileText, ExternalLink } from 'lucide-react';
 import {
@@ -15,84 +15,105 @@ import {
 import type { StudyLog } from '@/types/database';
 import { Label } from '@radix-ui/react-label';
 import { Select, SelectContent, SelectValue, SelectTrigger, SelectItem } from '../ui/select';
-import { MasterTask, SubTask, Task } from '@/types/tasks';
-import { group } from 'console';
+import { Groups, MasterTask, Project, SubTask, Task } from '@/types/tasks';
+import { useForm } from 'react-hook-form';
+import { mock } from 'node:test';
 
 
 interface mockData {
-  group: string;
-  masterTasks: MasterTask[];
+  project: Project;
 }
 const mockData: mockData[] = [
   {
-    group: 'Revisões',
-    masterTasks: [
-      {
-        id: 'mt1',
-        name: 'Estudar Física',
-        description: 'Revisar os conceitos de termodinâmica e mecânica',
-        completed: false,
-        created_at: '2024-06-15',
-        updated_at: '2024-06-15',
-        subTasks: [
-          {
-            id: 'st1',
-            masterTaskId: 'mt1',
-            name: 'R1 - Releitura',
-            completed: false,
-            created_at: '2024-06-15',
-            updated_at: '2024-06-15',
-          },
-          {
-            id: 'st2',
-            masterTaskId: 'mt1',
-            name: 'R2 - Fixação',
-            completed: false,
-            created_at: '2024-06-15',
-            updated_at: '2024-06-15',
-          },
-        ],
-        comments: [],
-      },
-      {
-        id: 'mt2',
-        name: 'Estudar Matemática',
-        description: 'Praticar exercícios de álgebra e geometria',
-        completed: false,
-        created_at: '2024-06-16',
-        updated_at: '2024-06-16',
-        subTasks: [
-          {
-            id: 'st3',
-            masterTaskId: 'mt2',
-            name: 'R1 - Releitura',
-            completed: false,
-            created_at: '2024-06-16',
-            updated_at: '2024-06-16',
-          },
-          {
-            id: 'st4',
-            masterTaskId: 'mt2',
-            name: 'R2 - Fixação',
-            completed: false,
-            created_at: '2024-06-16',
-            updated_at: '2024-06-16',
-          },
-        ],
-        comments: [],
-      }
-    ],
+    project: {
+      id: 'p1',
+      name: 'Física',
+      color: '#FF5733',
+      created_at: '2024-06-10',
+      groups: [
+        {
+          id: 'g1',
+          name: 'Revisão',
+          created_at: '2024-06-11',
+          tasks: [
+            {
+              id: 'mt1',
+              title: 'Estudar Física',
+              description: 'Revisar os conceitos de termodinâmica e mecânica',
+              completed: false,
+              created_at: '2024-06-15',
+              updated_at: '2024-06-15',
+              subTasks: [
+                {
+                  id: 'st1',
+                  masterTaskId: 'mt1',
+                  title: 'R1 - Releitura',
+                  completed: false,
+                  created_at: '2024-06-15',
+                  updated_at: '2024-06-15',
+                },
+                {
+                  id: 'st2',
+                  masterTaskId: 'mt1',
+                  title: 'R2 - Fixação',
+                  completed: false,
+                  created_at: '2024-06-15',
+                  updated_at: '2024-06-15',
+                },
+              ],
+              comments: [],
+            },
+            {
+              id: 'mt2',
+              title: 'Estudar Matemática',
+              description: 'Praticar exercícios de álgebra e geometria',
+              completed: false,
+              created_at: '2024-06-16',
+              updated_at: '2024-06-16',
+              subTasks: [
+                {
+                  id: 'st3',
+                  masterTaskId: 'mt2',
+                  title: 'R1 - Releitura',
+                  completed: false,
+                  created_at: '2024-06-16',
+                  updated_at: '2024-06-16',
+                },
+                {
+                  id: 'st4',
+                  masterTaskId: 'mt2',
+                  title: 'R2 - Fixação',
+                  completed: false,
+                  created_at: '2024-06-16',
+                  updated_at: '2024-06-16',
+                },
+              ],
+              comments: [],
+            }
+          ],
+        },
+      ],
+    },
   },
 ];
 
 interface TodoListProps {
   selectedProject?: string;
 }
+
+interface formData {
+  title: string;
+  description: string;
+  project: string;
+}
+
 export function TodoList({ selectedProject }: TodoListProps) {
   const { data: todos = [], isLoading } = useTodos();
-  const createTodo = useCreateTodo();
+  const createTask = useCreateTask();
   const toggleTodo = useToggleTodo();
   const deleteTodo = useDeleteTodo();
+
+  const project = mockData[0].project;
 
   const projects = ['todo', 'today', 'project1', 'project2'];
 
@@ -105,7 +126,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
   const subTask1: SubTask = {
     id: 'st1',
     masterTaskId: 'mt1',
-    name: 'R1 - Releitura',
+    title: 'R1 - Releitura',
     completed: false,
     created_at: '2024-06-15',
     updated_at: '2024-06-15',
@@ -114,19 +135,23 @@ export function TodoList({ selectedProject }: TodoListProps) {
   const pendingTodos = todos.filter((t) => !t.completed);
   const completedTodos = todos.filter((t) => t.completed);
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const { handleSubmit } = useForm<formData>();
 
-    if (!newDescription.trim()) {
+  const onSubmit = async (data: formData) => {
+    console.log('Creating todo:', data);
+
+    if (!data.description.trim()) {
       toast.error('Digite a descrição da tarefa');
       return;
     }
 
     try {
-      await createTodo.mutateAsync({
-        description: newDescription.trim(),
+      await createTask.mutateAsync({
+        id: crypto.randomUUID(),
+        title: data.title,
+        description: data.description,
+        event_id: undefined,
       });
-      setNewDescription('');
       toast.success('Tarefa criada!');
     } catch (error) {
       toast.error('Erro ao criar tarefa');
@@ -183,13 +208,13 @@ export function TodoList({ selectedProject }: TodoListProps) {
     </div>
   );
 
-  const renderMasterTaskItem = (mockData: mockData) => (
+  const renderTaskGroups = (group: Groups) => (
     <Card className="mt-6">
       <CardHeader>
-        <CardTitle>{mockData.group}</CardTitle>
+        <CardTitle>{group.name}</CardTitle>
       </CardHeader>
       <CardContent className='flex flex-col gap-4'>
-        {mockData.masterTasks.map((masterTask) => (
+        {group.tasks.map((masterTask) => (
           <div className='border p-4'>
             <div
               onClick={() => setViewingTask(masterTask)}
@@ -197,7 +222,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
               <Checkbox />
               <div className='flex justify-between w-full'>
                 <div className=''>
-                  <h3>{masterTask.name}</h3>
+                  <h3>{masterTask.title}</h3>
                   <p className='text-sm text-zinc-600'>{masterTask.description}</p>
                 </div>
                 <div>
@@ -211,13 +236,13 @@ export function TodoList({ selectedProject }: TodoListProps) {
                 <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
                   <Checkbox />
                   <div>
-                    <h3>{subTask.name}</h3>
+                    <h3>{subTask.title}</h3>
                     <span className='text-zinc-700'>descrição Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vitae veritatis tempore hic.</span>
                   </div>
                 </div>
                 <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
                   <Checkbox />
-                  <h3>{subTask.name}</h3>
+                  <h3>{subTask.title}</h3>
                 </div>
               </div>
             ))}
@@ -241,11 +266,11 @@ export function TodoList({ selectedProject }: TodoListProps) {
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: '#000' }}
                 />
-                <span className="font-medium">{masterTask.name}</span>
+                <span className="font-medium">{masterTask.title}</span>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Titulo</p>
-                <p className="text-foreground">{masterTask.name}</p>
+                <p className="text-foreground">{masterTask.title}</p>
               </div>
 
               {masterTask.description && (
@@ -365,15 +390,13 @@ export function TodoList({ selectedProject }: TodoListProps) {
       </Card>
 
       <div>
-        <h1 className="text-3xl font-bold text-foreground my-6">Física</h1>
-
-        {mockData.map((group) => (
-          <div key={group.group}>
-            {renderMasterTaskItem(group)}
+        <h1 className="text-3xl font-bold text-foreground my-6">{project.name}</h1>
+        {project.groups.map((group) => (
+          <div key={group.id}>
+            {renderTaskGroups(group)}
           </div>
         ))}
       </div>
-
 
       {
         completedTodos.length > 0 && (
@@ -399,90 +422,37 @@ export function TodoList({ selectedProject }: TodoListProps) {
           <DialogHeader>
             <DialogTitle>Adicionar Tarefa</DialogTitle>
           </DialogHeader>
-          <div>
-            <form className="flex flex-col gap-4">
-              <div>
-                <Label htmlFor="subtask-name">Nome da Tarefa</Label>
-                <Input id="subtask-name" type="text" placeholder="Digite o nome da tarefa" />
-              </div>
-              <div>
-                <Label htmlFor="subtask-description">Descrição</Label>
-                <Input id="subtask-description" type="text" placeholder="Digite a descrição da tarefa" />
-              </div>
-              <div>
-                <Label htmlFor="subtask-project">Grupo:</Label>
-                <Select>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um projeto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((project) => (
-                      <SelectItem key={project} value={project}>
-                        {project}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="secondary" onClick={() => setViewingForm(false)}>Cancelar</Button>
-                <Button type="submit">Adicionar</Button>
-              </div>
-            </form>
-          </div>
+          <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
+            <div>
+              <Label htmlFor="subtask-name">Nome da Tarefa</Label>
+              <Input id="subtask-name" type="text" placeholder="Digite o nome da tarefa" />
+            </div>
+            <div>
+              <Label htmlFor="subtask-description">Descrição</Label>
+              <Input id="subtask-description" type="text" placeholder="Digite a descrição da tarefa" />
+            </div>
+            <div>
+              <Label htmlFor="subtask-project">Grupo:</Label>
+              <Select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione um projeto" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects.map((project) => (
+                    <SelectItem key={project} value={project}>
+                      {project}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" onClick={() => setViewingForm(false)}>Cancelar</Button>
+              <Button type="submit">Adicionar</Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
-
-      {/* Repeated Dialog - consider removing one of them 
-      <Dialog open={!!viewingTask
-      } onOpenChange={() => setViewingTask(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Contexto da Sessão de Estudo</DialogTitle>
-          </DialogHeader>
-          {viewingTask && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: viewingTaskTest.subjects?.color }}
-                />
-                <span className="font-medium">{viewingTaskTest.subjects?.name}</span>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Conteúdo</p>
-                <p className="text-foreground">{viewingTaskTest.content}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Data</p>
-                <p className="text-foreground">
-                  {new Date(viewingTaskTest.study_date).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-              {viewingTaskTest.notes && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Anotações</p>
-                  <p className="text-foreground whitespace-pre-wrap">{viewingTaskTest.notes}</p>
-                </div>
-              )}
-              <div>
-                <p>Subanotações:</p>
-                <div className="px-4 py-2 bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground">
-                  R1 - Releitura: Rever os conceitos de energia e trabalho
-                </div>
-                <div className="p-4 bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground mt-2">
-                  R2 - Fixação: Resolver exercícios do capítulo 3
-                </div>
-              </div>
-              <div>
-                <p>Comentar:</p>
-                <Input type="text" />
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog >
-*/}
     </>
   );
 }

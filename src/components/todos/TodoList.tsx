@@ -18,109 +18,10 @@ import { Select, SelectContent, SelectValue, SelectTrigger, SelectItem } from '.
 import { Groups, MasterTask, Project, SubTask, Task } from '@/types/tasks';
 import { useForm } from 'react-hook-form';
 import { mock } from 'node:test';
+import { mockDataTodoList } from './mockTodolist';
 
 
-interface mockData {
-  project: Project;
-}
-const mockData: mockData[] = [
-  {
-    project: {
-      id: 'p1',
-      name: 'Física',
-      color: '#FF5733',
-      created_at: '2024-06-10',
-      groups: [
-        {
-          id: 'g1',
-          name: 'Revisão',
-          created_at: '2024-06-11',
-          tasks: [
-            {
-              id: 'mt1',
-              title: 'Estudar Física',
-              description: 'Revisar os conceitos de termodinâmica e mecânica',
-              completed: false,
-              created_at: '2024-06-15',
-              updated_at: '2024-06-15',
-              subTasks: [
-                {
-                  id: 'st1',
-                  masterTaskId: 'mt1',
-                  title: 'R1 - Releitura',
-                  completed: false,
-                  created_at: '2024-06-15',
-                  updated_at: '2024-06-15',
-                },
-                {
-                  id: 'st2',
-                  masterTaskId: 'mt1',
-                  title: 'R2 - Fixação',
-                  completed: false,
-                  created_at: '2024-06-15',
-                  updated_at: '2024-06-15',
-                },
-              ],
-              comments: [],
-            },
-            {
-              id: 'mt2',
-              title: 'Estudar Matemática',
-              description: 'Praticar exercícios de álgebra e geometria',
-              completed: false,
-              created_at: '2024-06-16',
-              updated_at: '2024-06-16',
-              subTasks: [
-                {
-                  id: 'st3',
-                  masterTaskId: 'mt2',
-                  title: 'R1 - Releitura',
-                  completed: false,
-                  created_at: '2024-06-16',
-                  updated_at: '2024-06-16',
-                },
-                {
-                  id: 'st4',
-                  masterTaskId: 'mt2',
-                  title: 'R2 - Fixação',
-                  completed: false,
-                  created_at: '2024-06-16',
-                  updated_at: '2024-06-16',
-                },
-              ],
-              comments: [],
-            }
-          ],
-        },
-      ],
-    },
-  },
-  {
-    project: {
-      id: 'p2',
-      name: 'Matemática',
-      color: '#33FF57',
-      created_at: '2024-06-12',
-      groups: [
-        {
-          id: 'g2',
-          name: 'Prática',
-          created_at: '2024-06-13',
-          tasks: [
-            {
-              id: 'mt3',
-              title: 'Resolver exercícios de cálculo',
-              description: 'Focar em integrais e derivadas',
-              completed: false,
-              created_at: '2024-06-17',
-              updated_at: '2024-06-17',
-            },
-          ],
-        },
-      ],
-    },
-  }
-];
+
 
 interface TodoListProps {
   selectedProject?: string;
@@ -139,7 +40,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
   const deleteTodo = useDeleteTodo();
 
   const projects = ['todo', 'today', 'fisica', 'matematica'];
-  const [project, setProject] = useState<Project>(mockData[0].project);
+  const [project, setProject] = useState<Project>(mockDataTodoList.modules[0].project[0]);
 
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
@@ -155,12 +56,12 @@ export function TodoList({ selectedProject }: TodoListProps) {
     const normalize = (str: string) =>
       str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
-    const foundProject = mockData.find((p) =>
-      normalize(p.project.name) === normalize(projectName)
+    const foundProject = mockDataTodoList.modules.find((m) =>
+      normalize(m.project[0].name) === normalize(projectName)
     );
 
     if (foundProject) {
-      setProject(foundProject.project);
+      setProject(foundProject.project[0]);
     }
   };
 

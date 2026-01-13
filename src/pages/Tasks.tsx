@@ -1,14 +1,25 @@
 import { Layout } from '@/components/layout/Layout';
+import { Navbar } from '@/components/layout/Navbar';
 import { TodoList } from '@/components/todos/TodoList';
+import { TodoListSidebar } from '@/components/todos/TodoListSidebar';
+import React from 'react';
 
 const Tasks = () => {
+
+  const [selectedProject, setSelectedProject] = React.useState<string | undefined>(undefined);
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-foreground mb-6">Gerenciar Tarefas</h1>
-        <TodoList />
+    <div>
+      <Navbar />
+      <div className="flex h-screen gap-8">
+        <TodoListSidebar 
+          setSelectedProject={setSelectedProject}
+        />
+
+        <main className='flex-1 p-8 w-full mx-auto'>
+          <TodoList selectedProject={selectedProject} />
+        </main>
       </div>
-    </Layout>
+    </div>
   );
 };
 

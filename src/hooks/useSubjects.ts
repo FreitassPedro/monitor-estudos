@@ -23,7 +23,7 @@ export function useCreateSubject() {
 
   return useMutation({
     mutationFn: async (newSubject: { name: string; color: string }) => {
-      const newSubj = localDb.insert<{ id: string; name: string; color: string }>('subjects', newSubject);
+      localDb.insert<{ id: string; name: string; color: string }>('subjects', newSubject);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });
@@ -59,12 +59,7 @@ export function useDeleteSubject() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('subjects')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      localDb.delete('subjects', id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subjects'] });

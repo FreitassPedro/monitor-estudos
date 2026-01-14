@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useCreateStudyLog } from '@/hooks/useStudyLogs';
-import { useCreateTask } from '@/hooks/useTodos';
+import { useCreateTask } from '@/hooks/useTasks';
 import { toast } from 'sonner';
 import { Clock, Plus } from 'lucide-react';
 

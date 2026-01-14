@@ -1,12 +1,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { usePendingTodos, useToggleTodo } from '@/hooks/useTodos';
+import { usePendingTasks, useToggleTask } from '@/hooks/useTasks';
 import { Link } from 'react-router-dom';
 import { ArrowRight, FileText } from 'lucide-react';
 
 export function QuickTodos() {
-  const { data: todos = [], isLoading } = usePendingTodos(3);
-  const toggleTodo = useToggleTodo();
+  const { data: todos = [], isLoading } = usePendingTasks(3);
+  const toggleTodo = useToggleTask();
 
   const handleToggle = (id: string, completed: boolean) => {
     toggleTodo.mutate({ id, completed: !completed });

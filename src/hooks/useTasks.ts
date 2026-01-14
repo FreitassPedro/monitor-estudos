@@ -3,43 +3,27 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Todo, CreateTaskInput } from '@/types/database';
 import { localDb } from '@/lib/localDb';
 
-export function useTodos() {
+export function useTasks() {
   return useQuery({
-    queryKey: ['todos'],
+    queryKey: ['tasks'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('todos')
-        .select('*, study_logs(*, subjects(*))')
-        .order('completed')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as Todo[];
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
+      return localDb.getAll<Todo>('tasks');
     },
   });
 }
 
-export function usePendingTodos(limit?: number) {
+export function usePendingTasks(limit?: number) {
   return useQuery({
-    queryKey: ['todos', 'pending', limit],
+    queryKey: ['tasks', 'pending', limit],
     queryFn: async () => {
-      let query = supabase
-        .from('todos')
-        .select('*, study_logs(*, subjects(*))')
-        .eq('completed', false)
-        .order('created_at', { ascending: false });
-
-      if (limit) {
-        query = query.limit(limit);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return data as Todo[];
+      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
+      const tasks = await localDb.getAll<Todo>('tasks');
+      return tasks.filter(task => !task.completed).slice(0, limit);
     },
   });
 }
+
 
 
 export function useCreateTask() {
@@ -58,7 +42,7 @@ export function useCreateTask() {
 }
 
 
-export function useToggleTodo() {
+export function useToggleTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -73,7 +57,7 @@ export function useToggleTodo() {
 }
 
 
-export function useDeleteTodo() {
+export function useDeleteTask() {
   const queryClient = useQueryClient();
 
   return useMutation({

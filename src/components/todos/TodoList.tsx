@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTodos, useToggleTodo, useDeleteTodo, useCreateTask } from '@/hooks/useTodos';
 import { toast } from 'sonner';
-import { Plus, Trash2, FileText, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, FileText, ExternalLink, ArrowDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import { Groups, MasterTask, Project, SubTask, Task } from '@/types/tasks';
 import { useForm } from 'react-hook-form';
 import { mock } from 'node:test';
 import { mockDataTodoList } from './mockTodolist';
+import { Arrow } from '@radix-ui/react-tooltip';
 
 
 
@@ -42,6 +43,8 @@ export function TodoList({ selectedProject }: TodoListProps) {
   const projects = ['todo', 'today', 'fisica', 'matematica'];
   const [project, setProject] = useState<Project>(mockDataTodoList.modules[0].project[0]);
 
+  const [groupsOpen, setGroupsOpen] = useState<string[]>([]);
+
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
@@ -51,25 +54,6 @@ export function TodoList({ selectedProject }: TodoListProps) {
   const completedTodos = todos.filter((t) => t.completed);
 
   const { handleSubmit } = useForm<formData>();
-
-  const onChangeProject = (projectName: string) => {
-    const normalize = (str: string) =>
-      str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-    const foundProject = mockDataTodoList.modules.find((m) =>
-      normalize(m.project[0].name) === normalize(projectName)
-    );
-
-    if (foundProject) {
-      setProject(foundProject.project[0]);
-    }
-  };
-
-  useEffect(() => {
-    if (selectedProject) {
-      onChangeProject(selectedProject);
-    }
-  }, [selectedProject]);
 
   const onSubmit = async (data: formData) => {
     console.log('Creating todo:', data);
@@ -89,6 +73,14 @@ export function TodoList({ selectedProject }: TodoListProps) {
       toast.success('Tarefa criada!');
     } catch (error) {
       toast.error('Erro ao criar tarefa');
+    }
+  };
+
+  const onGroupClick = (groupName: string) => {
+    if (groupsOpen.includes(groupName)) {
+      setGroupsOpen(groupsOpen.filter((g) => g !== groupName));
+    } else {
+      setGroupsOpen([...groupsOpen, groupName]);
     }
   };
 
@@ -144,45 +136,48 @@ export function TodoList({ selectedProject }: TodoListProps) {
 
   const renderTaskGroups = (group: Groups) => (
     <Card className="mt-6">
-      <CardHeader>
+      <CardHeader onClick={() => onGroupClick(group.name)} className="cursor-pointer flex-row items-center">
+        <ArrowDown className={`transform transition-transform ${groupsOpen.includes(group.name) ? '-rotate-90' : ''}`} />
         <CardTitle>{group.name}</CardTitle>
       </CardHeader>
-      <CardContent className='flex flex-col gap-4'>
-        {group.tasks.map((masterTask) => (
-          <div className='border p-4'>
-            <div
-              onClick={() => setViewingTask(masterTask)}
-              className='py-1 text-lg flex flex-row items-center gap-2 border-t border-b'>
-              <Checkbox />
-              <div className='flex justify-between w-full'>
-                <div className=''>
-                  <h3>{masterTask.title}</h3>
-                  <p className='text-sm text-zinc-600'>{masterTask.description}</p>
-                </div>
-                <div>
-                  <FileText className="h-3 w-3" />
-                  Ver contexto
-                </div>
-              </div>
-            </div>
-            {masterTask.subTasks && masterTask.subTasks.map((subTask) => (
-              <div className='px-4'>
-                <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
-                  <Checkbox />
+      {groupsOpen.includes(group.name) && (
+        <CardContent className='flex flex-col gap-4'>
+          {group.tasks.map((masterTask) => (
+            <div className='border p-4'>
+              <div
+                onClick={() => setViewingTask(masterTask)}
+                className='py-1 text-lg flex flex-row items-center gap-2 border-t border-b'>
+                <Checkbox />
+                <div className='flex justify-between w-full'>
+                  <div className=''>
+                    <h3>{masterTask.title}</h3>
+                    <p className='text-sm text-zinc-600'>{masterTask.description}</p>
+                  </div>
                   <div>
-                    <h3>{subTask.title}</h3>
-                    <span className='text-zinc-700'>descrição Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vitae veritatis tempore hic.</span>
+                    <FileText className="h-3 w-3" />
+                    Ver contexto
                   </div>
                 </div>
-                <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
-                  <Checkbox />
-                  <h3>{subTask.title}</h3>
-                </div>
               </div>
-            ))}
-          </div>
-        ))}
-      </CardContent >
+              {masterTask.subTasks && masterTask.subTasks.map((subTask) => (
+                <div className='px-4'>
+                  <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
+                    <Checkbox />
+                    <div>
+                      <h3>{subTask.title}</h3>
+                      <span className='text-zinc-700'>descrição Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vitae veritatis tempore hic.</span>
+                    </div>
+                  </div>
+                  <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
+                    <Checkbox />
+                    <h3>{subTask.title}</h3>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </CardContent >
+      )}
     </Card >
   );
 
@@ -282,7 +277,7 @@ export function TodoList({ selectedProject }: TodoListProps) {
         <h1 className="text-2xl font-bold text-foreground mb-6">Gerenciar Tarefas</h1>
         <div>
           <Label htmlFor="">Selecionar projeto</Label>
-          <Select onValueChange={onChangeProject}>
+          <Select>
             <SelectTrigger>
               <SelectValue placeholder="Selecione um projeto" />
             </SelectTrigger>
@@ -306,9 +301,10 @@ export function TodoList({ selectedProject }: TodoListProps) {
         </CardContent>
       </Card>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Pendentes ({pendingTodos.length})</CardTitle>
+      <Card className="mt-6" >
+        <CardHeader onClick={() => onGroupClick("pending")} className="cursor-pointer">
+          <ArrowDown />
+          <CardTitle> Pendentes ({pendingTodos.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {pendingTodos.length === 0 ? (

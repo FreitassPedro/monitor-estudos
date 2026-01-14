@@ -18,6 +18,8 @@ import { Select, SelectContent, SelectValue, SelectTrigger, SelectItem } from '.
 import { Groups, MasterTask, Project, SubTask, Task } from '@/types/tasks';
 import { useForm } from 'react-hook-form';
 import { mockDataTodoList } from './mockTodolist';
+import TaskGroups from './TaskGroups';
+import ViewingTask from './ViewingTask';
 
 interface TodoListProps {
   selectedProjectName?: string;
@@ -42,13 +44,13 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
         .map((m) => m.project)
         .flat()
         .find((p) => p.name === selectedProjectName) ||
-        mockDataTodoList.modules[0].project[0]
+      mockDataTodoList.modules[0].project[0]
     );
   }, [selectedProjectName]);
-  
+
   const [project, setProject] = useState<Project>(mockDataTodoList.modules.map(m => m.project).flat().find(p => p.name === selectedProjectName) || mockDataTodoList.modules[0].project[0]);
 
-  const [groupsOpen, setGroupsOpen] = useState<string[]>([]);
+  const [groupsOpen, setGroupsOpen] = useState<string[]>(project.groups.map(g => g.name));
 
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
@@ -59,6 +61,17 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
   const completedTodos = todos.filter((t) => t.completed);
 
   const { handleSubmit } = useForm<formData>();
+
+  const handleViewTask = (taskId: string) => {
+    const findTask = project.groups
+      .map(g => g.tasks)
+      .flat()
+      .find(t => t.id === taskId);
+
+    if (findTask) {
+      setViewingTask(findTask);
+    }
+  };
 
   const onSubmit = async (data: formData) => {
     console.log('Creating todo:', data);
@@ -139,127 +152,9 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
     </div>
   );
 
-  const renderTaskGroups = (group: Groups) => (
-    <Card className="mt-6">
-      <CardHeader onClick={() => onGroupClick(group.name)} className="cursor-pointer flex-row items-center">
-        <ArrowDown className={`transform transition-transform ${groupsOpen.includes(group.name) ? '-rotate-90' : ''}`} />
-        <CardTitle>{group.name}</CardTitle>
-      </CardHeader>
-      {groupsOpen.includes(group.name) && (
-        <CardContent className='flex flex-col gap-4'>
-          {group.tasks.map((masterTask) => (
-            <div className='border p-4'>
-              <div
-                onClick={() => setViewingTask(masterTask)}
-                className='py-1 text-lg flex flex-row items-center gap-2 border-t border-b'>
-                <Checkbox />
-                <div className='flex justify-between w-full'>
-                  <div className=''>
-                    <h3>{masterTask.title}</h3>
-                    <p className='text-sm text-zinc-600'>{masterTask.description}</p>
-                  </div>
-                  <div>
-                    <FileText className="h-3 w-3" />
-                    Ver contexto
-                  </div>
-                </div>
-              </div>
-              {masterTask.subTasks && masterTask.subTasks.map((subTask) => (
-                <div className='px-4'>
-                  <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
-                    <Checkbox />
-                    <div>
-                      <h3>{subTask.title}</h3>
-                      <span className='text-zinc-700'>descrição Lorem ipsum dolor sit amet consectetur, adipisicing elit. Vitae veritatis tempore hic.</span>
-                    </div>
-                  </div>
-                  <div className='py-1 text-md flex items-center gap-2 border-t border-b'>
-                    <Checkbox />
-                    <h3>{subTask.title}</h3>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
-        </CardContent >
-      )}
-    </Card >
-  );
 
-  const renderTaskDialog = (masterTask: MasterTask) => (
-    <Dialog open={!!viewingTask} onOpenChange={() => setViewingTask(null)}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Contexto da Sessão de Estudo</DialogTitle>
-        </DialogHeader>
-        {masterTask && (
-          <div className='flex flex-row gap-6'>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: '#000' }}
-                />
-                <span className="font-medium">{masterTask.title}</span>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Titulo</p>
-                <p className="text-foreground">{masterTask.title}</p>
-              </div>
 
-              {masterTask.description && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Descrição</p>
-                  <p className="text-foreground whitespace-pre-wrap">{masterTask.description}</p>
-                </div>
-              )}
-              <div>
-                <p>Evento vinculado</p>
-                <div className="p-2 bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground text-sm mt-2">
-                  Sessão de estudo em 20/06/2024, das 14:00 às 16:00
-                </div>
-              </div>
-              <div>
-                <p>Sub-tarefas:</p>
-                <div className="px-4 text-sm py bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground justify-center items-center flex">
-                  <Checkbox className="mr-2" />
-                  R1 - Releitura: Rever os conceitos de energia e trabalho
-                </div>
-                <div className="px-4 text-sm py bg-accent/50 border-t border-b rounded whitespace-pre-wrap text-foreground justify-center items-center flex">
-                  <Checkbox className="mr-2" />
-                  R1 - Releitura: Rever os conceitos de energia e trabalho
-                </div>
-              </div>
-              <div>
-                <p>Comentar:</p>
-                <Input type="text" />
-              </div>
-            </div>
-            <div className='bg-zinc-200/40 space-y-4 p-2'>
-              <div>
-                <p className="text-sm text-muted-foreground">Projeto:</p>
-                <p className="text-foreground text-sm">
-                  #Fisica/Revisao
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Criado:</p>
-                <p className="text-foreground text-sm">
-                  {new Date(masterTask.created_at).toLocaleDateString('pt-BR')}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tags:</p>
-                <p className="text-foreground text-sm">
-                  #revisao
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog >
-  );
+
 
 
   if (isLoading) {
@@ -306,9 +201,17 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
         </CardContent>
       </Card>
 
+      <div>
+        <h1 className="text-3xl font-bold text-foreground my-6">{project.name}</h1>
+        {project.groups.map((group) => (
+          <div key={group.id}>
+            <TaskGroups group={group} setViewingTask={handleViewTask} />
+          </div>
+        ))}
+      </div>
+
       <Card className="mt-6" >
         <CardHeader onClick={() => onGroupClick("pending")} className="cursor-pointer">
-          <ArrowDown />
           <CardTitle> Pendentes ({pendingTodos.length})</CardTitle>
         </CardHeader>
         <CardContent>
@@ -323,15 +226,6 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
           )}
         </CardContent>
       </Card>
-
-      <div>
-        <h1 className="text-3xl font-bold text-foreground my-6">{project.name}</h1>
-        {project.groups.map((group) => (
-          <div key={group.id}>
-            {renderTaskGroups(group)}
-          </div>
-        ))}
-      </div>
 
       {
         completedTodos.length > 0 && (
@@ -348,9 +242,7 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
         )
       }
 
-      {
-        viewingTask && renderTaskDialog(viewingTask as MasterTask)
-      }
+      <ViewingTask task={viewingTask} setViewingTask={setViewingTask} />
 
       <Dialog open={viewingForm} onOpenChange={() => setViewingForm(false)}>
         <DialogContent className="max-w-lg">

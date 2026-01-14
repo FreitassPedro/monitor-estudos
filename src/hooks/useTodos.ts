@@ -104,3 +104,18 @@ export function useDeleteTodo() {
   });
 }
 */
+
+
+export function useCreateTaskGroup() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ project_id, group_name }: { project_id: string; group_name: string }) => {
+      // Implement the logic to create a new todo group in your database
+      console.log('Creating new todo group with name:', group_name);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todoGroups'] });
+    },
+  });
+}

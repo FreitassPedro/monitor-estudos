@@ -130,14 +130,7 @@ export function StudySessionForm() {
         notes: data.notes || undefined,
       });
 
-      if (createTodoAfter && todoDescription.trim()) {
-        await createTask.mutateAsync({
-          id: crypto.randomUUID(),
-          title: `Tarefa da sessão de estudo: ${data.content}`,
-          description: todoDescription.trim(),
-          event_id: undefined,
-        });
-      }
+
 
       toast.success('Sessão de estudo registrada!');
       navigate('/historico');

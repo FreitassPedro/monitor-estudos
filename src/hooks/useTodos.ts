@@ -56,27 +56,36 @@ export function useCreateTask() {
     },
   })
 }
+
+
 export function useToggleTodo() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
-      const { data, error } = await supabase
-        .from('todos')
-        .update({ completed })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data as Todo;
+      localDb.update<Todo>('tasks', id, { completed });
+      return { id, completed };
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['todos'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
-  });
+  })
 }
 
+
+export function useDeleteTodo() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      localDb.delete('tasks', id);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  })
+}
+/*
 export function useDeleteTodo() {
   const queryClient = useQueryClient();
 
@@ -94,3 +103,4 @@ export function useDeleteTodo() {
     },
   });
 }
+*/

@@ -16,28 +16,23 @@ import type { StudyLog } from '@/types/database';
 import { Label } from '@radix-ui/react-label';
 import { Select, SelectContent, SelectValue, SelectTrigger, SelectItem } from '../ui/select';
 import { Groups, MasterTask, Project, SubTask, Task } from '@/types/tasks';
-import { useForm } from 'react-hook-form';
 import { mockDataTodoList } from './mockTodolist';
 import TaskGroups from './TaskGroups';
 import ViewingTask from './ViewingTask';
+import NewTaskForm from './NewTaskForm';
 
 interface TodoListProps {
   selectedProjectName?: string;
 }
 
-interface formData {
-  title: string;
-  description: string;
-  project: string;
-}
 
 export function TodoList({ selectedProjectName }: TodoListProps) {
   const { data: todos = [], isLoading } = useTodos();
-  const createTask = useCreateTask();
   const toggleTodo = useToggleTodo();
   const deleteTodo = useDeleteTodo();
 
   const projects = ['todo', 'today', 'fisica', 'matematica'];
+
   useEffect(() => {
     setProject(
       mockDataTodoList.modules
@@ -50,8 +45,6 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
 
   const [project, setProject] = useState<Project>(mockDataTodoList.modules.map(m => m.project).flat().find(p => p.name === selectedProjectName) || mockDataTodoList.modules[0].project[0]);
 
-  const [groupsOpen, setGroupsOpen] = useState<string[]>(project.groups.map(g => g.name));
-
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
 
@@ -60,7 +53,6 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
   const pendingTodos = todos.filter((t) => !t.completed);
   const completedTodos = todos.filter((t) => t.completed);
 
-  const { handleSubmit } = useForm<formData>();
 
   const handleViewTask = (taskId: string) => {
     const findTask = project.groups
@@ -73,36 +65,7 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
     }
   };
 
-  const onSubmit = async (data: formData) => {
-    console.log('Creating todo:', data);
-
-    if (!data.description.trim()) {
-      toast.error('Digite a descrição da tarefa');
-      return;
-    }
-
-    try {
-      await createTask.mutateAsync({
-        id: crypto.randomUUID(),
-        title: data.title,
-        description: data.description,
-        event_id: undefined,
-      });
-      toast.success('Tarefa criada!');
-    } catch (error) {
-      toast.error('Erro ao criar tarefa');
-    }
-  };
-
-  const onGroupClick = (groupName: string) => {
-    if (groupsOpen.includes(groupName)) {
-      setGroupsOpen(groupsOpen.filter((g) => g !== groupName));
-    } else {
-      setGroupsOpen([...groupsOpen, groupName]);
-    }
-  };
-
-  const handleToggle = (id: string, completed: boolean) => {
+  const handleTodoCompletion = (id: string, completed: boolean) => {
     toggleTodo.mutate({ id, completed: !completed });
   };
 
@@ -123,7 +86,7 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
     >
       <Checkbox
         checked={todo.completed}
-        onCheckedChange={() => handleToggle(todo.id, todo.completed)}
+        onCheckedChange={() => handleTodoCompletion(todo.id, todo.completed)}
         className="mt-0.5"
       />
       <div className="flex-1 min-w-0">
@@ -152,11 +115,6 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
     </div>
   );
 
-
-
-
-
-
   if (isLoading) {
     return (
       <Card>
@@ -174,7 +132,7 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
   return (
     <>
       <div className='flex justify-between items-center'>
-        <h1 className="text-2xl font-bold text-foreground mb-6">Gerenciar Tarefas</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-6">Gerenciar Tarefas tt</h1>
         <div>
           <Label htmlFor="">Selecionar projeto</Label>
           <Select>
@@ -198,6 +156,15 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
         </CardHeader>
         <CardContent>
           <Button onClick={() => setViewingForm(true)}>Criar nova Tarefa</Button>
+          {viewingForm && (
+            <NewTaskForm
+              projectName={project.name}
+              projectId={project.id}
+              groups={project.groups}
+              viewingForm={viewingForm}
+              setViewingForm={setViewingForm}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -211,7 +178,7 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
       </div>
 
       <Card className="mt-6" >
-        <CardHeader onClick={() => onGroupClick("pending")} className="cursor-pointer">
+        <CardHeader className="cursor-pointer">
           <CardTitle> Pendentes ({pendingTodos.length})</CardTitle>
         </CardHeader>
         <CardContent>
@@ -235,7 +202,7 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {completedTodos.map(renderTodoItem)}
+                {completedTodos.map((renderTodoItem))}
               </div>
             </CardContent>
           </Card>
@@ -243,43 +210,6 @@ export function TodoList({ selectedProjectName }: TodoListProps) {
       }
 
       <ViewingTask task={viewingTask} setViewingTask={setViewingTask} />
-
-      <Dialog open={viewingForm} onOpenChange={() => setViewingForm(false)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Adicionar Tarefa</DialogTitle>
-          </DialogHeader>
-          <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <Label htmlFor="subtask-name">Nome da Tarefa</Label>
-              <Input id="subtask-name" type="text" placeholder="Digite o nome da tarefa" />
-            </div>
-            <div>
-              <Label htmlFor="subtask-description">Descrição</Label>
-              <Input id="subtask-description" type="text" placeholder="Digite a descrição da tarefa" />
-            </div>
-            <div>
-              <Label htmlFor="subtask-project">Grupo:</Label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um projeto" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((project) => (
-                    <SelectItem key={project} value={project}>
-                      {project}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setViewingForm(false)}>Cancelar</Button>
-              <Button type="submit">Adicionar</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

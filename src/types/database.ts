@@ -48,9 +48,15 @@ export interface CreateStudyLogInput {
   notes?: string;
 }
 
-export interface CreateTaskInput extends Partial<Task> {
+export interface CreateTaskInput {
   id: string;
   title: string;
   description: string;
+  project_id: string;
+  created_at: string;
+  updated_at?: string;
+  due_date?: string;
   event_id?: string;
+  priority?: string;
+  status?: string;
 }

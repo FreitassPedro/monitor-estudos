@@ -1,5 +1,3 @@
-import { randomUUID } from "crypto";
-
 export const localDb = {
 
     getAll: <T>(table: string): T[] => {
@@ -13,7 +11,7 @@ export const localDb = {
         const now = new Date().toISOString();
         const newItem = {
             ...item,
-            id: crypto.randomUUID(),
+            id: window.crypto.randomUUID(),
             created_at: now,
             updated_at: now,
         };
@@ -41,9 +39,9 @@ export const localDb = {
     },
 
     // DELETAR (DELETE)
-    delete: <T extends { id: string }>(key: string, id: string) => {
-        const currentData = localDb.getAll<T>(key);
+    delete: <T extends { id: string }>(table: string, id: string) => {
+        const currentData = localDb.getAll<T>(table);
         const filteredData = currentData.filter((item) => item.id !== id);
-        localStorage.setItem(key, JSON.stringify(filteredData));
+        localStorage.setItem(table, JSON.stringify(filteredData));
     }
 };

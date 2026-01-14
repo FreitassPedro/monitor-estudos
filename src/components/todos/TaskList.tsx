@@ -19,7 +19,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import z from 'zod';
 
-interface TodoListProps {
+interface TaskListProps {
   selectedProjectName?: string;
 }
 
@@ -29,7 +29,7 @@ const formSchemaNewGroup = z.object({
 
 type typeFormSchemaNewGroup = z.infer<typeof formSchemaNewGroup>;
 
-export function TodoList({ selectedProjectName }: TodoListProps) {
+export function TaskList({ selectedProjectName }: TaskListProps) {
     const { data: projects = [], isLoading, isError } = useProjects();
     const createGroup = useCreateGroup();
   

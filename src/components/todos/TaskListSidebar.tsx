@@ -1,11 +1,10 @@
 import { useProjects } from "@/hooks/useProjects";
 
-interface TodoListSidebarProps {
+interface TaskListSidebarProps {
     setSelectedProject?: (project: string) => void;
 }
 
-export const TodoListSidebar: React.FC<TodoListSidebarProps> = ({ setSelectedProject }) => {
-
+export const TaskListSidebar: React.FC<TaskListSidebarProps> = ({ setSelectedProject }) => {
     const { data: projects, isLoading, isError } = useProjects();
 
     const handleChangeProject = (projectName: string) => {

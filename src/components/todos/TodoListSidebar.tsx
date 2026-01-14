@@ -6,6 +6,13 @@ interface TodoListSidebarProps {
 
 export const TodoListSidebar: React.FC<TodoListSidebarProps> = ({ setSelectedProject }) => {
 
+    const handleChangeProject = (projectName: string) => {
+        console.log("Selected project:", projectName);
+        if (setSelectedProject) {
+            setSelectedProject(projectName);
+        }
+    };
+
     return (
         <div className="bg-card w-[240px] h-full p-4 border-r border-border">
             {mockDataTodoList.modules.map((module) => (
@@ -14,8 +21,9 @@ export const TodoListSidebar: React.FC<TodoListSidebarProps> = ({ setSelectedPro
                     {module.project.map((project) => (
                         <div
                             className="flex flex-col px-2 py-2 hover:bg-background transition duration-300 cursor-pointer rounded-md"
-                            onClick={() => setSelectedProject && setSelectedProject(project.name)}
-                            key={project.id}>
+                            onClick={() => handleChangeProject(project.name)}
+                            key={project.id}
+                        >
                             # {project.name}
                         </div>
                     ))}

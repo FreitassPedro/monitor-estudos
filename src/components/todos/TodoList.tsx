@@ -17,15 +17,10 @@ import { Label } from '@radix-ui/react-label';
 import { Select, SelectContent, SelectValue, SelectTrigger, SelectItem } from '../ui/select';
 import { Groups, MasterTask, Project, SubTask, Task } from '@/types/tasks';
 import { useForm } from 'react-hook-form';
-import { mock } from 'node:test';
 import { mockDataTodoList } from './mockTodolist';
-import { Arrow } from '@radix-ui/react-tooltip';
-
-
-
 
 interface TodoListProps {
-  selectedProject?: string;
+  selectedProjectName?: string;
 }
 
 interface formData {
@@ -34,14 +29,24 @@ interface formData {
   project: string;
 }
 
-export function TodoList({ selectedProject }: TodoListProps) {
+export function TodoList({ selectedProjectName }: TodoListProps) {
   const { data: todos = [], isLoading } = useTodos();
   const createTask = useCreateTask();
   const toggleTodo = useToggleTodo();
   const deleteTodo = useDeleteTodo();
 
   const projects = ['todo', 'today', 'fisica', 'matematica'];
-  const [project, setProject] = useState<Project>(mockDataTodoList.modules[0].project[0]);
+  useEffect(() => {
+    setProject(
+      mockDataTodoList.modules
+        .map((m) => m.project)
+        .flat()
+        .find((p) => p.name === selectedProjectName) ||
+        mockDataTodoList.modules[0].project[0]
+    );
+  }, [selectedProjectName]);
+  
+  const [project, setProject] = useState<Project>(mockDataTodoList.modules.map(m => m.project).flat().find(p => p.name === selectedProjectName) || mockDataTodoList.modules[0].project[0]);
 
   const [groupsOpen, setGroupsOpen] = useState<string[]>([]);
 

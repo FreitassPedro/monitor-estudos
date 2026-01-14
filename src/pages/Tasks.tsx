@@ -5,18 +5,19 @@ import { TodoListSidebar } from '@/components/todos/TodoListSidebar';
 import React from 'react';
 
 const Tasks = () => {
-
-  const [selectedProject, setSelectedProject] = React.useState<string | undefined>(undefined);
+  const [selectedProjectName, setSelectedProject] = React.useState<string | undefined>(undefined);
+ 
   return (
     <div>
       <Navbar />
       <div className="flex h-screen gap-8">
-        <TodoListSidebar 
+        <TodoListSidebar
           setSelectedProject={setSelectedProject}
         />
 
         <main className='flex-1 p-8 w-full mx-auto'>
-          <TodoList selectedProject={selectedProject} />
+          <TodoList
+            selectedProjectName={selectedProjectName} />
         </main>
       </div>
     </div>

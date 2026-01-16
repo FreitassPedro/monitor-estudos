@@ -1,16 +1,16 @@
 import { useProjects } from "@/hooks/useProjects";
 
 interface TaskListSidebarProps {
-    setSelectedProject?: (project: string) => void;
+    setSelectedProjectId: (projectId: string) => void;
 }
 
-export const TaskListSidebar: React.FC<TaskListSidebarProps> = ({ setSelectedProject }) => {
+export const TaskListSidebar: React.FC<TaskListSidebarProps> = ({ setSelectedProjectId }) => {
     const { data: projects, isLoading, isError } = useProjects();
 
-    const handleChangeProject = (projectName: string) => {
-        console.log("Selected project:", projectName);
-        if (setSelectedProject) {
-            setSelectedProject(projectName);
+    const handleChangeProject = (projectId: string) => {
+        console.log("Selected project:", projectId);
+        if (setSelectedProjectId) {
+            setSelectedProjectId(projectId);
         }
     };
 
@@ -27,7 +27,7 @@ export const TaskListSidebar: React.FC<TaskListSidebarProps> = ({ setSelectedPro
             {projects?.map((project) => (
                 <div
                     className="flex flex-col px-2 py-2 hover:bg-background transition duration-300 cursor-pointer rounded-md"
-                    onClick={() => handleChangeProject(project.name)}
+                    onClick={() => handleChangeProject(project.id)}
                     key={project.id}
                 >
                     # {project.name}

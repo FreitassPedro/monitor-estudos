@@ -27,14 +27,17 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateTask } from "@/hooks/useTasks";
 import { toast } from "sonner";
-import { Groups } from "@/types/tasks";
+import { Groups, Task } from "@/types/tasks";
+import { MasterTaskWithSubTasks } from "./TaskList";
 
 interface NewTaskFormProps {
     projectName: string;
     projectId: string;
     groups?: Groups[];
+    masterTasks?: MasterTaskWithSubTasks[];
     viewingForm: boolean;
     setViewingForm: (open: boolean) => void;
+    study_log_id?: string;
 }
 
 const priorities = ["Baixa", "Média", "Alta", "Urgente"];
@@ -45,17 +48,21 @@ const formSchema = z.object({
     description: z.string().optional(),
     project_id: z.string(),
     group_id: z.string().optional(),
+    parent_id: z.string().optional(),
     due_date: z.string().optional(),
     priority: z.string().optional(),
     status: z.string().optional(),
+    study_log_id: z.string().optional(),
 });
 
 const NewTaskForm: React.FC<NewTaskFormProps> = ({
     projectName,
     projectId,
     groups,
+    masterTasks,
     viewingForm,
     setViewingForm,
+    study_log_id,
 }) => {
     const createTask = useCreateTask();
 
@@ -65,6 +72,7 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({
             title: "",
             description: "",
             project_id: projectId,
+            study_log_id: study_log_id,
         },
     });
 
@@ -73,14 +81,14 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({
 
         try {
             await createTask.mutateAsync({
-                id: crypto.randomUUID(),
                 title: values.title,
                 description: values.description,
-                created_at: new Date().toISOString(),
                 project_id: values.project_id,
+                group_id: values.group_id,
+                parent_id: values.parent_id,
                 due_date: values.due_date,
-                priority: values.priority,
-                status: values.status,
+                completed: false,
+                study_log_id: values.study_log_id,
             });
             toast.success("Tarefa criada!");
             setViewingForm(false)
@@ -183,6 +191,33 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({
                                 )}
                             />
                         </div>
+                        <FormField
+                            control={form.control}
+                            name="parent_id"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Tarefa Pai</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecione uma tarefa pai (opcional)" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {masterTasks?.map((task) => (
+                                                <SelectItem key={task.id} value={task.id}>
+                                                    {task.title}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}

@@ -31,7 +31,7 @@ export function useCreateStudyLog() {
 
   return useMutation({
     mutationFn: async (input: CreateStudyLogInput) => {
-      localDb.insert<StudyLog>('study_logs', input);
+      return localDb.insert<StudyLog>('study_logs', input);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['study_logs'] });

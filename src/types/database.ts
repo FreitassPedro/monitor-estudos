@@ -59,4 +59,14 @@ export interface CreateTaskInput {
   event_id?: string;
   priority?: string;
   status?: string;
+  study_log_id?: string;
+}
+
+export interface CreateTaskDTO {
+  title: string;
+  description?: string;
+  project_id: string;
+  group_id?: string;
+  parent_id?: string | null;
+  due_date?: string;
 }

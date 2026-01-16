@@ -1,14 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { Todo, CreateTaskInput } from '@/types/database';
 import { localDb } from '@/lib/localDb';
+import { Groups, Task, TaskTree } from '@/types/tasks';
+import { CreateTaskDTO } from '@/types/database';
 
-export function useTasks() {
+export function useTasks(project_id?: string) {
   return useQuery({
-    queryKey: ['tasks'],
+    queryKey: ['tasks', project_id],
     queryFn: async () => {
       await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
-      return localDb.getAll<Todo>('tasks');
+      const tasks: Task[] = await localDb.getAll<Task>('tasks');
+      return tasks.filter(task => task.project_id === project_id);
     },
   });
 }
@@ -18,28 +19,39 @@ export function usePendingTasks(limit?: number) {
     queryKey: ['tasks', 'pending', limit],
     queryFn: async () => {
       await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate network delay
-      const tasks = await localDb.getAll<Todo>('tasks');
+      const tasks = await localDb.getAll<Task>('tasks');
       return tasks.filter(task => !task.completed).slice(0, limit);
     },
   });
 }
 
-
-
-export function useCreateTask() {
+export function useCreateTask(data: CreateTaskDTO) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (input: CreateTaskInput) => {
-      localDb.insert<CreateTaskInput>('tasks', input);
+  const newTask: Task = {
+    id: crypto.randomUUID(),
+    title: data.title,
+    description: data.description,
+    completed: false,
+    project_id: data.project_id,
+    group_id: data.group_id || undefined,
+    parent_id: data.parent_id || null,
+    created_at: new Date().toISOString(),
+    due_date: data.due_date,
+  };
 
-      return input;
+  return useMutation({
+    mutationFn: async () => {
+      localDb.insert<Task>('tasks', newTask);
+      return newTask;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
-  })
+  });
 }
+
+
 
 
 export function useToggleTask() {
@@ -47,7 +59,7 @@ export function useToggleTask() {
 
   return useMutation({
     mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
-      localDb.update<Todo>('tasks', id, { completed });
+      localDb.update<Task>('tasks', id, { completed });
       return { id, completed };
     },
     onSuccess: () => {
@@ -101,5 +113,40 @@ export function useCreateTaskGroup() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todoGroups'] });
     },
+  });
+}
+
+
+export function buildTaskTree(tasks: Task[]): TaskTree[] {
+  const map = new Map<string, TaskTree>();
+  const roots: TaskTree[] = [];
+
+  if (!tasks) return roots;
+  // Cria o mapa inicial
+  tasks.forEach(task => {
+    map.set(task.id, { ...task, subTasks: [] });
+  });
+
+  // Conecta os nós filhos aos pais
+  map.forEach(task => {
+    const node = map.get(task.id);
+
+    if (task.parent_id && map.has(task.parent_id)) {
+      map.get(task.parent_id)!.subTasks.push(node!);
+    } else {
+      roots.push(node!);
+    }
+  })
+  return roots;
+}
+
+export function buildGroupsWithTasks(tasks: TaskTree[], groups: Groups[]): Groups[] {
+  if (!tasks || !groups) return [];
+
+  return groups.map(group => {
+    return {
+      ...group,
+      tasks: tasks.filter(task => task.group_id === group.id)
+    };
   });
 }

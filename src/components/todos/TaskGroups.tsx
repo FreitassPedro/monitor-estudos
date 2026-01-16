@@ -3,25 +3,42 @@ import { Checkbox } from "../ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Groups } from "@/types/tasks";
 import React from "react";
+import { GroupsWithTasks } from "./TaskList";
 
 interface TaskGroupsProps {
-    group: Groups;
+    data: GroupsWithTasks;
     setViewingTask: (taskId: string) => void;
 }
 
-const TaskGroups: React.FC<TaskGroupsProps> = ({ group, setViewingTask }) => {
+const TaskGroups: React.FC<TaskGroupsProps> = ({ data, setViewingTask }) => {
 
     const [isOpen, setIsOpen] = React.useState<boolean>(true);
+
+    if (!data) {
+        return (
+            <Card>
+                <CardContent className="py-8">
+                    <div className="animate-pulse space-y-3">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-14 bg-muted rounded" />
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    console.log("Grouped Tasks in TaskGroups:", data);
 
     return (
         <Card className="mt-6">
             <CardHeader onClick={() => setIsOpen(!isOpen)} className="cursor-pointer flex-row items-center">
                 <ArrowDown className={`transform transition-transform ${isOpen ? '' : '-rotate-90'}`} />
-                <CardTitle>{group.name}</CardTitle>
+                <CardTitle>{data.name}</CardTitle>
             </CardHeader>
             {isOpen && (
                 <CardContent className='flex flex-col gap-4'>
-                    {group.tasks.map((masterTask) => (
+                    {data.tasks.map((masterTask) => (
                         <div className='border p-4' key={masterTask.id}>
                             <div
                                 onClick={() => setViewingTask(masterTask.id)}

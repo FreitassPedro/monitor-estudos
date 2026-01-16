@@ -1,4 +1,4 @@
-import { Task } from "@/types/tasks";
+import { Task, TaskTree } from "@/types/tasks";
 import {
     Dialog,
     DialogContent,
@@ -7,11 +7,10 @@ import {
 } from '@/components/ui/dialog';
 import { Checkbox } from "../ui/checkbox";
 import { Input } from "../ui/input";
-import { MasterTaskWithSubTasks } from "./TaskList";
 
 interface ViewingTaskProps {
-    task: MasterTaskWithSubTasks;
-    setViewingTask: (task: MasterTaskWithSubTasks | null) => void;
+    task: TaskTree;
+    setViewingTask: (task: TaskTree ) => void;
 }
 
 const ViewingTask: React.FC<ViewingTaskProps> = ({ task, setViewingTask }) => {

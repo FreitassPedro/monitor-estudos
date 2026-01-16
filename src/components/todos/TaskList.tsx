@@ -70,7 +70,7 @@ export function TaskList({ projectId }: TaskListProps) {
 
   }, [groups.data, tasksTree, projectId, tasks.data]);
 
-  const [viewingTask, setViewingTask] = useState<Task | null>(null);
+  const [viewingTask, setViewingTask] = useState<TaskTree>(null);
   const [viewingForm, setViewingForm] = useState<boolean>(false);
   const [viewingNewGroupForm, setViewingNewGroupForm] = useState<boolean>(false);
 
@@ -83,12 +83,8 @@ export function TaskList({ projectId }: TaskListProps) {
     resolver: zodResolver(formSchemaNewGroup),
   });
 
-  const handleViewTask = (taskId: string) => {
-    const findTask = tasks.data?.find((t) => t.id === taskId);
-    if (findTask) {
-      setViewingTask({ ...findTask });
-    }
-
+  const handleViewTask = (task: TaskTree) => {
+    return task ? setViewingTask(task) : setViewingTask(null);
   };
 
   const handleSubmitNewGroup = async (values: z.infer<typeof formSchemaNewGroup>) => {
@@ -147,7 +143,7 @@ export function TaskList({ projectId }: TaskListProps) {
         <h1 className="text-3xl font-bold text-foreground my-6">{project.name}</h1>
         {groupedTasks.map((group) => (
           <div key={group.id}>
-            <TaskGroups data={group} setViewingTask={handleViewTask} />
+            <TaskGroups data={group} setViewingTask={setViewingTask} />
           </div>
         ))}
       </div>
@@ -163,7 +159,6 @@ export function TaskList({ projectId }: TaskListProps) {
           projectName={project.name}
           projectId={project.id}
           groups={groups.data || []}
-          masterTasks={groupedTasks}
           viewingForm={viewingForm}
           setViewingForm={setViewingForm}
         />

@@ -28,13 +28,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateTask } from "@/hooks/useTasks";
 import { toast } from "sonner";
 import { Groups, Task } from "@/types/tasks";
-import { MasterTaskWithSubTasks } from "./TaskList";
 
 interface NewTaskFormProps {
     projectName: string;
     projectId: string;
     groups?: Groups[];
-    masterTasks?: MasterTaskWithSubTasks[];
     viewingForm: boolean;
     setViewingForm: (open: boolean) => void;
     study_log_id?: string;
@@ -59,7 +57,6 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({
     projectName,
     projectId,
     groups,
-    masterTasks,
     viewingForm,
     setViewingForm,
     study_log_id,
@@ -87,8 +84,7 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({
                 group_id: values.group_id,
                 parent_id: values.parent_id,
                 due_date: values.due_date,
-                completed: false,
-                study_log_id: values.study_log_id,
+                study_log_id: values.study_log_id ? values.study_log_id : undefined,
             });
             toast.success("Tarefa criada!");
             setViewingForm(false)
@@ -191,33 +187,7 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({
                                 )}
                             />
                         </div>
-                        <FormField
-                            control={form.control}
-                            name="parent_id"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Tarefa Pai</FormLabel>
-                                    <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Selecione uma tarefa pai (opcional)" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {masterTasks?.map((task) => (
-                                                <SelectItem key={task.id} value={task.id}>
-                                                    {task.title}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+
                         <div className="grid grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}

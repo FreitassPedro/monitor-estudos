@@ -1,13 +1,13 @@
 import { ArrowDown, FileText } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Groups } from "@/types/tasks";
+import { Groups, TaskTree } from "@/types/tasks";
 import React from "react";
 import { GroupsWithTasks } from "./TaskList";
 
 interface TaskGroupsProps {
     data: GroupsWithTasks;
-    setViewingTask: (taskId: string) => void;
+    setViewingTask: (task: TaskTree) => void;
 }
 
 const TaskGroups: React.FC<TaskGroupsProps> = ({ data, setViewingTask }) => {
@@ -41,7 +41,7 @@ const TaskGroups: React.FC<TaskGroupsProps> = ({ data, setViewingTask }) => {
                     {data.tasks.map((masterTask) => (
                         <div className='border p-4' key={masterTask.id}>
                             <div
-                                onClick={() => setViewingTask(masterTask.id)}
+                                onClick={() => setViewingTask(masterTask)}
                                 className='py-1 text-lg flex flex-row items-center gap-2 border-t border-b'>
                                 <Checkbox />
                                 <div className='flex justify-between w-full'>

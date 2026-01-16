@@ -25,23 +25,23 @@ export function usePendingTasks(limit?: number) {
   });
 }
 
-export function useCreateTask(data: CreateTaskDTO) {
+export function useCreateTask() {
   const queryClient = useQueryClient();
 
-  const newTask: Task = {
-    id: crypto.randomUUID(),
-    title: data.title,
-    description: data.description,
-    completed: false,
-    project_id: data.project_id,
-    group_id: data.group_id || undefined,
-    parent_id: data.parent_id || null,
-    created_at: new Date().toISOString(),
-    due_date: data.due_date,
-  };
-
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async (data: CreateTaskDTO) => {
+      const newTask: Task = {
+        id: crypto.randomUUID(),
+        title: data.title,
+        description: data.description,
+        completed: false,
+        project_id: data.project_id,
+        group_id: data.group_id || undefined,
+        parent_id: data.parent_id || null,
+        created_at: new Date().toISOString(),
+        due_date: data.due_date,
+      };
+
       localDb.insert<Task>('tasks', newTask);
       return newTask;
     },
@@ -107,6 +107,7 @@ export function useCreateTaskGroup() {
 
   return useMutation({
     mutationFn: async ({ project_id, group_name }: { project_id: string; group_name: string }) => {
+      localDb.insert<Groups>('groups', { name: group_name, project_id });
       // Implement the logic to create a new todo group in your database
       console.log('Creating new todo group with name:', group_name);
     },

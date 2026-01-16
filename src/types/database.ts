@@ -69,4 +69,5 @@ export interface CreateTaskDTO {
   group_id?: string;
   parent_id?: string | null;
   due_date?: string;
+  study_log_id?: string;
 }

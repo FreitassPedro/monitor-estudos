@@ -10,6 +10,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "../ui/textarea";
+import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface NewReviewFormProps {
   setOpen: (open: boolean) => void;
@@ -17,6 +19,8 @@ interface NewReviewFormProps {
 
 
 export const NewReviewForm = ({ setOpen }: NewReviewFormProps) => {
+  const navigate = useNavigate();
+
   const { data: subjects } = useSubjects();
   const createReview = useCreateReview();
   const form = useForm<ReviewFormData>({
@@ -38,7 +42,36 @@ export const NewReviewForm = ({ setOpen }: NewReviewFormProps) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <DialogHeader><DialogTitle>Agendar Nova Revisão</DialogTitle></DialogHeader>
         <div className="grid gap-4 py-4">
-          <FormField control={form.control} name="subjectId" render={({ field }) => (<FormItem><FormLabel>Matéria</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione a matéria" /></SelectTrigger></FormControl><SelectContent>{subjects?.map((subject) => (<SelectItem key={subject.id} value={subject.id}>{subject.name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="subjectId" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Matéria</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a matéria" />
+                  </SelectTrigger></FormControl>
+                <SelectContent>
+                  {subjects.length === 0 ? (
+                    <SelectItem value="empty" disabled>Nenhuma matéria cadastrada</SelectItem>
+
+                  ) : (
+                    subjects?.map((subject) => (
+                      <SelectItem key={subject.id} value={subject.id}>{subject.name}</SelectItem>))
+                  )}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/materias')}
+                className="mt-2"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Cadastrar matéria
+              </Button>
+              <FormMessage />
+            </FormItem>)} />
           <FormField control={form.control} name="topic" render={({ field }) => (<FormItem><FormLabel>Assunto</FormLabel><FormControl><Input placeholder="Ex: Funções de 2º grau" {...field} /></FormControl><FormMessage /></FormItem>)} />
           <div className="grid grid-cols-2 gap-4">
             <FormField control={form.control} name="priority" render={({ field }) => (<FormItem><FormLabel>Prioridade</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder='Média' /></SelectTrigger></FormControl><SelectContent><SelectItem value="Baixa">Baixa</SelectItem><SelectItem value="Média">Média</SelectItem><SelectItem value="Alta">Alta</SelectItem></SelectContent></Select><FormMessage /></FormItem>)} />

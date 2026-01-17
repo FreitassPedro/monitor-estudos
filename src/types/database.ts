@@ -1,6 +1,3 @@
-import Tasks from "@/pages/Tasks";
-import { Task } from "./tasks";
-
 export interface Subject {
   id: string;
   name: string;
@@ -20,16 +17,6 @@ export interface StudyLog {
   created_at: string;
   updated_at: string;
   subjects?: Subject;
-}
-
-export interface Todo {
-  id: string;
-  description: string;
-  completed: boolean;
-  study_log_id: string | null;
-  created_at: string;
-  updated_at: string;
-  study_logs?: StudyLog;
 }
 
 export interface CreateSubjectInput {

@@ -31,6 +31,20 @@ export function useCreateSubject() {
   });
 };
 
+export function useGetSubjectById() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const allSubjects = await localDb.getAll<Subject>('subjects');
+      const subject = allSubjects.find((subj) => subj.id === id);
+      if (!subject) {
+        throw new Error('Subject not found');
+      }
+      return subject;
+    }
+  })
+}
 
 
 export function useUpdateSubject() {

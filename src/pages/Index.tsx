@@ -5,6 +5,7 @@ import { RecentSessions } from '@/components/dashboard/RecentSessions';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { FutureReview } from '@/components/dashboard/FutureReview';
 
 const Index = () => {
   return (
@@ -25,6 +26,9 @@ const Index = () => {
         <div className="grid gap-6 md:grid-cols-2">
           <QuickTodos />
           <RecentSessions />
+        </div>
+        <div>
+          <FutureReview />
         </div>
       </div>
     </Layout>

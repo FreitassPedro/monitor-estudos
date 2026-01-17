@@ -10,7 +10,15 @@ import { Slider } from "../ui/slider";
 import { Calendar } from '@/components/ui/calendar';
 import { parseISO, startOfDay } from "date-fns";
 
-export const EditCycleDialog = ({ review, cycle, open, setOpen }: { review: Review; cycle: ReviewCycle; open: boolean; setOpen: (open: boolean) => void }) => {
+
+interface EditCycleDialogProps {
+    review: Review;
+    cycle: ReviewCycle;
+    open: boolean;
+    setOpen: (open: boolean) => void;
+}
+
+export const EditCycleDialog = ({ review, cycle, open, setOpen }: EditCycleDialogProps) => {
     const updateCycle = useUpdateCycle();
     const [performance, setPerformance] = useState<number>(cycle.performance ?? 75);
     const [notes, setNotes] = useState(cycle.notes ?? '');

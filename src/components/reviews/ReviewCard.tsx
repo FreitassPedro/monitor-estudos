@@ -6,10 +6,19 @@ import { Button } from "../ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "../ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { Review, ReviewCycle } from '@/types/reviews';
+import { Checkbox } from '../ui/checkbox';
 
 const priorityVariant = { Baixa: 'secondary', Média: 'default', Alta: 'destructive' } as const;
 
-export const ReviewCard = ({ review, onCompleteCycle, onEdit, onDelete, onEditCycle }: { review: Review; onCompleteCycle: (review: Review, cycle: ReviewCycle) => void; onEdit: (review: Review) => void; onDelete: (reviewId: string) => void; onEditCycle: (review: Review, cycle: ReviewCycle) => void; }) => {
+interface ReviewCardProps {
+    review: Review;
+    onCompleteCycle: (review: Review, cycle: ReviewCycle) => void;
+    onEdit: (review: Review) => void;
+    onDelete: (reviewId: string) => void;
+    onEditCycle: (review: Review, cycle: ReviewCycle) => void;
+}
+
+export const ReviewCard = ({ review, onCompleteCycle, onEdit, onDelete, onEditCycle }: ReviewCardProps) => {
 
     const remainingTime = (plannedDateISO: string) => {
         const now = new Date();
@@ -66,9 +75,13 @@ export const ReviewCard = ({ review, onCompleteCycle, onEdit, onDelete, onEditCy
                 <p className="text-sm text-muted-foreground">Agendado em: {format(parseISO(review.createdAt), 'dd/MM/yyyy')}</p>
                 <div className="space-y-2">
                     {review.cycles.map(cycle => (
-                        <div key={cycle.cycle} className={`flex items-center justify-between p-2 rounded-md 
-            ${cycle.isCompleted ? "bg-muted/50" : "bg-zinc-300/50"}`}>
+                        <div key={cycle.cycle}
+                            className={`flex items-center justify-between p-2 rounded-md 
+                            ${cycle.isCompleted ? "bg-muted/50" : "bg-zinc-300/50"}`}>
                             <div className="flex-1 flex-col">
+                                <Checkbox checked={cycle.isCompleted}
+                                    onCheckedChange={() => onCompleteCycle(review, cycle)}
+                                    className="mr-2 mb-1 rounded-full" />
                                 <span className="font-semibold">R{cycle.cycle}</span>
                                 {cycle.notes && <p className="text-xs text-muted-foreground mt-1 truncate">{cycle.notes}</p>}
                             </div>
@@ -77,7 +90,7 @@ export const ReviewCard = ({ review, onCompleteCycle, onEdit, onDelete, onEditCy
                                 {cycle.isCompleted ? (
                                     <Badge variant="success">✓ {format(parseISO(cycle.plannedDate), 'dd/MM')} ({cycle.performance}%)</Badge>
                                 ) : (
-                                    <Button variant="outline" className={`rounded-xl text-sm ${remainingColor(cycle.plannedDate)}`} size="sm" onClick={() => onCompleteCycle(review, cycle)}>
+                                    <Button variant="outline" className={`rounded-xl text-sm ${remainingColor(cycle.plannedDate)}`} size="sm" onClick={() => onEditCycle(review, cycle)}>
                                         <CalendarArrowDown className="mr-1 h-3 w-3" />
                                         {format(parseISO(cycle.plannedDate), 'dd/MM')}
                                         <span className={`text-sm ${remainingColor(cycle.plannedDate)}`}>{remainingTime(cycle.plannedDate)}</span>

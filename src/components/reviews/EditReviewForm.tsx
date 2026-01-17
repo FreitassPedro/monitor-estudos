@@ -11,7 +11,12 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 
-export const EditReviewForm = ({ review, setOpen }: { review: Review, setOpen: (open: boolean) => void }) => {
+interface EditReviewFormProps {
+    review: Review;
+    setOpen: (open: boolean) => void;
+}
+
+export const EditReviewForm = ({ review, setOpen }: EditReviewFormProps) => {
     const updateReviewDetails = useUpdateReviewDetails();
     const form = useForm<ReviewFormData>({
         resolver: zodResolver(reviewFormSchema),

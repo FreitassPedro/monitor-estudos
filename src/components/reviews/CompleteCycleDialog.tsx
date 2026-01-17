@@ -8,9 +8,14 @@ import { Textarea } from "../ui/textarea";
 import { Review, ReviewCycle, ReviewSuggestion } from "@/types/reviews";
 import { useState } from "react";
 
+interface CompleteCycleDialogProps {
+    review: Review;
+    cycle: ReviewCycle;
+    open: boolean;
+    setOpen: (open: boolean) => void;
+}
 
-
-export const CompleteCycleDialog = ({ review, cycle, open, setOpen }: { review: Review; cycle: ReviewCycle; open: boolean; setOpen: (open: boolean) => void }) => {
+export const CompleteCycleDialog = ({ review, cycle, open, setOpen }: CompleteCycleDialogProps) => {
     const [performance, setPerformance] = useState(cycle.performance ?? 75);
     const [comments, setComments] = useState(cycle.notes ?? '');
     const [suggestion, setSuggestion] = useState<ReviewSuggestion>(cycle.suggestion ?? 'none');

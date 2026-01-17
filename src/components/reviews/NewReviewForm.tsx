@@ -11,8 +11,12 @@ import { Input } from "../ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "../ui/textarea";
 
+interface NewReviewFormProps {
+  setOpen: (open: boolean) => void;
+}
 
-export const NewReviewForm = ({ setOpen }: { setOpen: (open: boolean) => void }) => {
+
+export const NewReviewForm = ({ setOpen }: NewReviewFormProps) => {
   const { data: subjects } = useSubjects();
   const createReview = useCreateReview();
   const form = useForm<ReviewFormData>({

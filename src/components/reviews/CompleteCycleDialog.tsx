@@ -7,6 +7,8 @@ import { Slider } from "../ui/slider";
 import { Textarea } from "../ui/textarea";
 import { Review, ReviewCycle, ReviewSuggestion } from "@/types/reviews";
 import { useState } from "react";
+import { format, parseISO } from "date-fns";
+import { CalendarClock } from "lucide-react";
 
 interface CompleteCycleDialogProps {
     review: Review;
@@ -28,11 +30,37 @@ export const CompleteCycleDialog = ({ review, cycle, open, setOpen }: CompleteCy
         });
     };
 
+    const loadNextCycle = () => {
+
+        const currentCycleNumber = cycle.cycle;
+        const nextCycleNumber = currentCycleNumber + 1;
+
+        if (review.cycles.some(c => c.cycle === nextCycleNumber)) {
+            const nextCycle = review.cycles.find(c => c.cycle === nextCycleNumber);
+            return (
+                <div className="bg-muted/50 flex flex-col gap-2 p-4 rounded-md">
+                    <div className="grid grid-cols-2">
+                        <h3 className="text-sm font-semibold">R{nextCycle?.cycle}</h3>
+                        <span className="text-sm text-muted-foreground flex items-center gap-1">
+                            <CalendarClock size={16} />
+                            {format(parseISO(nextCycle.plannedDate), 'dd/MM/yyyy')}
+                        </span>
+                    </div>
+                    {nextCycle?.notes && (
+                        <p>{nextCycle?.notes}</p>
+                    )}
+                </div>
+            )
+        }
+        return;
+    };
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Completar Revisão R{cycle.cycle}</DialogTitle>
+                    <span>Tópico:</span> {cycle.notes}
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                     <div>
@@ -56,6 +84,10 @@ export const CompleteCycleDialog = ({ review, cycle, open, setOpen }: CompleteCy
                     <div>
                         <Label htmlFor="comments">Comentários</Label>
                         <Textarea id="comments" value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Como foi essa revisão? Alguma dificuldade?" className="mt-2" />
+                    </div>
+                    <div>
+                        <Label>Próxima Revisão:</Label>
+                        {loadNextCycle()}
                     </div>
                 </div>
                 <DialogFooter>

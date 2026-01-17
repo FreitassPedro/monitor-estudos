@@ -28,7 +28,7 @@ const getRescheduledCycles = (
     // Return cycles that are already completed as they are
     if (cycle.cycle <= completedCycle.cycle) {
       if(cycle.cycle === completedCycle.cycle){
-        return { ...cycle, isCompleted: true, performance, comments: completedCycle.comments };
+        return { ...cycle, isCompleted: true, performance, notes: completedCycle.notes, suggestion: completedCycle.suggestion };
       }
       return cycle;
     }
@@ -37,7 +37,7 @@ const getRescheduledCycles = (
     if (needsRescheduling) {
       const originalInterval = differenceInDays(
         parseISO(cycle.plannedDate),
-        parseISO(originalCycles[cycle.cycle - 2]?.plannedDate ?? new Date()) // a bit complex
+        parseISO(originalCycles[cycle.cycle - 2]?.plannedDate ?? formatISO(new Date())) // a bit complex
       );
 
       let newInterval = originalInterval;

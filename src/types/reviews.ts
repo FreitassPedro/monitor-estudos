@@ -1,12 +1,13 @@
 export type ReviewPriority = 'Baixa' | 'Média' | 'Alta';
-export type ReviewSuggestion = 'Teoria' | 'Anki' | 'Exercícios';
+export type ReviewSuggestion = 'Teoria' | 'Anki' | 'Exercícios' | 'none';
 
 export interface ReviewCycle {
   cycle: number; // 1 for R1, 2 for R2, etc.
   plannedDate: string; // ISO date string
   isCompleted: boolean;
   performance?: number; // e.g., 0-100
-  comments?: string;
+  suggestion?: ReviewSuggestion;
+  notes?: string;
 }
 
 export interface Review {

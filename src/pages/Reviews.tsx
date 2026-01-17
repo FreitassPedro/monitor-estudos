@@ -26,7 +26,10 @@ import { EditCycleDialog } from '@/components/reviews/EditCycleDialog';
 import { EditReviewForm } from '@/components/reviews/EditReviewForm';
 import { ReviewCard } from '@/components/reviews/ReviewCard';
 import { NewReviewForm } from '@/components/reviews/NewReviewForm';
+<<<<<<< HEAD
 import { CompleteCycleDialog } from '@/components/reviews/CompleteCycleDialog';
+=======
+>>>>>>> e59fdb4929ed991674bfc2528737d2795ddc381b
 
 
 // --- Form Schemas ---
@@ -38,6 +41,61 @@ export const reviewFormSchema = z.object({
   generalNotes: z.string().optional(),
 });
 export type ReviewFormData = z.infer<typeof reviewFormSchema>;
+<<<<<<< HEAD
+=======
+
+// --- CompleteCycleDialog (No changes) ---
+const CompleteCycleDialog = ({ review, cycle, open, setOpen }: { review: Review; cycle: ReviewCycle; open: boolean; setOpen: (open: boolean) => void }) => {
+  const [performance, setPerformance] = useState(cycle.performance ?? 75);
+  const [comments, setComments] = useState(cycle.notes ?? '');
+  const [suggestion, setSuggestion] = useState<ReviewSuggestion>(cycle.suggestion ?? 'none');
+  const updateReview = useUpdateReview();
+
+  const handleSubmit = () => {
+    const completedCycleWithData = { ...cycle, comments, suggestion };
+    updateReview.mutate({ review, completedCycle: completedCycleWithData, performance }, {
+      onSuccess: () => setOpen(false),
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Completar Revisão R{cycle.cycle}</DialogTitle></DialogHeader>
+        <div className="py-4 space-y-4">
+          <div>
+            <Label>Desempenho: {performance}%</Label>
+            <Slider value={[performance]} onValueChange={(value) => setPerformance(value[0])} max={100} step={5} className="mt-2" />
+          </div>
+          <div>
+            <Label>Sugestão: (opcional)</Label>
+            <Select onValueChange={(value) => setSuggestion(value as ReviewSuggestion)} value={suggestion}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Deixar em branco" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value=" ">Deixar em branco</SelectItem>
+                <SelectItem value="Teoria">Teoria</SelectItem>
+                <SelectItem value="Anki">Anki</SelectItem>
+                <SelectItem value="Exercícios">Exercícios</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="comments">Comentários</Label>
+            <Textarea id="comments" value={comments} onChange={(e) => setComments(e.target.value)} placeholder="Como foi essa revisão? Alguma dificuldade?" className="mt-2" />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+          <Button onClick={handleSubmit} disabled={updateReview.isPending}>{updateReview.isPending ? 'Salvando...' : 'Confirmar'}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+>>>>>>> e59fdb4929ed991674bfc2528737d2795ddc381b
 
 // --- ReviewsPage ---
 const ReviewsPage: React.FC = () => {

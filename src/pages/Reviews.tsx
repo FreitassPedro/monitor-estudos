@@ -21,6 +21,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { useSubjects } from '@/hooks/useSubjects';
 import { useReviews, useCreateReview, useUpdateReview, useUpdateReviewDetails, useDeleteReview, useUpdateCycle } from '@/hooks/useReviews';
 import type { Review, ReviewCycle, NewReviewData } from '@/types/reviews';
+import { Layout } from '@/components/layout/Layout';
 
 const priorityVariant = { Baixa: 'secondary', Média: 'default', Alta: 'destructive' } as const;
 
@@ -163,12 +164,14 @@ const EditCycleDialog = ({ review, cycle, open, setOpen }: { review: Review; cyc
   const [comments, setComments] = useState(cycle.comments ?? '');
   const [plannedDate, setPlannedDate] = useState<Date | undefined>(parseISO(cycle.plannedDate));
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(cycle);
     let updatedCycle: ReviewCycle;
     if (cycle.isCompleted) {
       updatedCycle = { ...cycle, performance, comments };
     } else {
-      updatedCycle = { ...cycle, plannedDate: startOfDay(plannedDate!).toISOString() };
+      updatedCycle = { ...cycle, plannedDate: startOfDay(plannedDate!).toISOString(), comments };
     }
 
     updateCycle.mutate({ reviewId: review.id, updatedCycle }, {
@@ -182,7 +185,7 @@ const EditCycleDialog = ({ review, cycle, open, setOpen }: { review: Review; cyc
         <DialogHeader>
           <DialogTitle>Editar Revisão R{cycle.cycle}</DialogTitle>
         </DialogHeader>
-        <div className="py-4 space-y-4">
+        <form onSubmit={handleSubmit} className="py-4 space-y-4">
           {cycle.isCompleted ? (
             <>
               <div>
@@ -195,7 +198,7 @@ const EditCycleDialog = ({ review, cycle, open, setOpen }: { review: Review; cyc
               </div>
             </>
           ) : (
-            <div className=''>
+            <>
               <div>
                 <Label>Alterar Data da Revisão</Label>
                 <Calendar mode="single" selected={plannedDate} onSelect={setPlannedDate} className="rounded-md border mt-2" />
@@ -204,13 +207,13 @@ const EditCycleDialog = ({ review, cycle, open, setOpen }: { review: Review; cyc
                 <Label htmlFor="comments-edit">Comentários</Label>
                 <Textarea id="comments-edit" value={comments} onChange={(e) => setComments(e.target.value)} className="mt-2" />
               </div>
-            </div>
+            </>
           )}
-        </div>
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={updateCycle.isPending}>{updateCycle.isPending ? 'Salvando...' : 'Salvar Alterações'}</Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+            <Button type='submit' disabled={updateCycle.isPending}>{updateCycle.isPending ? 'Salvando...' : 'Salvar Alterações'}</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
@@ -321,52 +324,54 @@ const ReviewsPage: React.FC = () => {
   }, {} as Record<string, Review[]>);
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Minhas Revisões</h1>
-          <p className="text-muted-foreground">Acompanhe, complete e edite suas revisões e ciclos.</p>
+    <Layout>
+      <div className="container mx-auto p-4">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Minhas Revisões</h1>
+            <p className="text-muted-foreground">Acompanhe, complete e edite suas revisões e ciclos.</p>
+          </div>
+          <Dialog open={isNewReviewOpen} onOpenChange={setNewReviewOpen}><DialogTrigger asChild><Button>Agendar Revisão</Button></DialogTrigger><DialogContent className="sm:max-w-[425px]"><NewReviewForm setOpen={setNewReviewOpen} /></DialogContent></Dialog>
         </div>
-        <Dialog open={isNewReviewOpen} onOpenChange={setNewReviewOpen}><DialogTrigger asChild><Button>Agendar Revisão</Button></DialogTrigger><DialogContent className="sm:max-w-[425px]"><NewReviewForm setOpen={setNewReviewOpen} /></DialogContent></Dialog>
-      </div>
 
-      {Object.keys(reviewsBySubject).length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center h-64 border-2 border-dashed rounded-lg"><h3 className="text-xl font-semibold">Nenhuma revisão agendada</h3><p className="text-muted-foreground mt-2">Clique em "Agendar Revisão" para começar.</p></div>
-      ) : (
-        <div className="space-y-8">
-          {Object.entries(reviewsBySubject).map(([subjectId, subjectReviews]) => (
-            <div key={subjectId}>
-              <h2 className="text-xl font-semibold mb-4 border-b pb-2">{subjectsMap.get(subjectId) ?? '...'}</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {subjectReviews.map((review) => (
-                  <ReviewCard
-                    key={review.id}
-                    review={review}
-                    onCompleteCycle={(r, c) => setCompletionState({ review: r, cycle: c })}
-                    onEdit={(r) => setEditingReview(r)}
-                    onDelete={(id) => setDeletingReviewId(id)}
-                    onEditCycle={(r, c) => setEditingCycle({ review: r, cycle: c })}
-                  />
-                ))}
+        {Object.keys(reviewsBySubject).length === 0 ? (
+          <div className="flex flex-col items-center justify-center text-center h-64 border-2 border-dashed rounded-lg"><h3 className="text-xl font-semibold">Nenhuma revisão agendada</h3><p className="text-muted-foreground mt-2">Clique em "Agendar Revisão" para começar.</p></div>
+        ) : (
+          <div className="space-y-8">
+            {Object.entries(reviewsBySubject).map(([subjectId, subjectReviews]) => (
+              <div key={subjectId}>
+                <h2 className="text-xl font-semibold mb-4 border-b pb-2">{subjectsMap.get(subjectId) ?? '...'}</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {subjectReviews.map((review) => (
+                    <ReviewCard
+                      key={review.id}
+                      review={review}
+                      onCompleteCycle={(r, c) => setCompletionState({ review: r, cycle: c })}
+                      onEdit={(r) => setEditingReview(r)}
+                      onDelete={(id) => setDeletingReviewId(id)}
+                      onEditCycle={(r, c) => setEditingCycle({ review: r, cycle: c })}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
-      {completionState && <CompleteCycleDialog review={completionState.review} cycle={completionState.cycle} open={!!completionState} setOpen={() => setCompletionState(null)} />}
-      {editingReview && <Dialog open={!!editingReview} onOpenChange={() => setEditingReview(null)}><DialogContent className="sm:max-w-[425px]"><EditReviewForm review={editingReview} setOpen={() => setEditingReview(null)} /></DialogContent></Dialog>}
-      {editingCycle && <EditCycleDialog review={editingCycle.review} cycle={editingCycle.cycle} open={!!editingCycle} setOpen={() => setEditingCycle(null)} />}
-      <AlertDialog open={!!deletingReviewId} onOpenChange={() => setDeletingReviewId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Você tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá deletar permanentemente a revisão e todos os seus ciclos.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (deletingReviewId) deleteReview.mutate(deletingReviewId); }} className="bg-destructive hover:bg-destructive/90">Deletar</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        {completionState && <CompleteCycleDialog review={completionState.review} cycle={completionState.cycle} open={!!completionState} setOpen={() => setCompletionState(null)} />}
+        {editingReview && <Dialog open={!!editingReview} onOpenChange={() => setEditingReview(null)}><DialogContent className="sm:max-w-[425px]"><EditReviewForm review={editingReview} setOpen={() => setEditingReview(null)} /></DialogContent></Dialog>}
+        {editingCycle && <EditCycleDialog review={editingCycle.review} cycle={editingCycle.cycle} open={!!editingCycle} setOpen={() => setEditingCycle(null)} />}
+        <AlertDialog open={!!deletingReviewId} onOpenChange={() => setDeletingReviewId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader><AlertDialogTitle>Você tem certeza?</AlertDialogTitle><AlertDialogDescription>Essa ação não pode ser desfeita. Isso irá deletar permanentemente a revisão e todos os seus ciclos.</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={() => { if (deletingReviewId) deleteReview.mutate(deletingReviewId); }} className="bg-destructive hover:bg-destructive/90">Deletar</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    </Layout>
   );
 };
 

@@ -6,6 +6,7 @@ export interface ReviewCycle {
   plannedDate: string; // ISO date string
   isCompleted: boolean;
   performance?: number; // e.g., 0-100
+  comments?: string;
 }
 
 export interface Review {

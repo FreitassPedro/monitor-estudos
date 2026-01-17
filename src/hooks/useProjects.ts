@@ -23,6 +23,26 @@ export function useProject(projectId: string) {
   });
 }
 
+export function useCreateProject() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (projectName: string) => {
+      const newProject: Project = {
+        id: crypto.randomUUID(),
+        name: projectName,
+        color: '#FFFFFF', // Default color, can be changed later
+        created_at: new Date().toISOString(),
+      };
+      localDb.insert<Project>('projects', newProject);
+      return newProject;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+}
+
 export function useCreateGroup() {
   const queryClient = useQueryClient();
 
@@ -45,6 +65,7 @@ export function useCreateGroup() {
     },
   })
 }
+
 
 export function useGroups(project_id: string) {
   return useQuery({

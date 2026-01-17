@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { BookOpen, Plus, History, FolderOpen, CheckSquare } from 'lucide-react';
+import { BookOpen, Plus, History, FolderOpen, CheckSquare, CalendarClock } from 'lucide-react';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: BookOpen },
@@ -8,6 +8,7 @@ const navItems = [
   { href: '/historico', label: 'Histórico', icon: History },
   { href: '/materias', label: 'Matérias', icon: FolderOpen },
   { href: '/tarefas', label: 'Tarefas', icon: CheckSquare },
+  { href: '/reviews', label: 'Revisões', icon: CalendarClock },
 ];
 
 export function Navbar() {

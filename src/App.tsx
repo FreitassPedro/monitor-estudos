@@ -9,6 +9,7 @@ import History from "./pages/History";
 import Subjects from "./pages/Subjects";
 import Tasks from "./pages/Tasks";
 import NotFound from "./pages/NotFound";
+import ReviewsPage from "./pages/Reviews";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/historico" element={<History />} />
           <Route path="/materias" element={<Subjects />} />
           <Route path="/tarefas" element={<Tasks />} />
+          <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

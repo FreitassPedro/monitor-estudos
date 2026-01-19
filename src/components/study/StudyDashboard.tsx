@@ -563,64 +563,66 @@ const StudyDashboard: React.FC = () => {
                             </CardHeader>
                             <CardContent>
                                 {dailyLogs.length > 0 ? (
-                                    <div className="relative flex flex-col">
-                                        <div className="absolute left-0 top-0 bottom-0 w-px bg-slate-200" />
-
-                                        <div className="flex text-xs text-slate-500 mb-4 pl-12">
-                                            {[6, 9, 12, 15, 18, 21, 24].map(hour => (
-                                                <div key={hour} className="flex-1 text-center">
-                                                    {hour}h
+                                    <div className="flex flex-row">
+                                        {/* Hour markers */}
+                                        <div className="flex flex-col text-xs text-slate-500 space-y-0" style={{ height: '36rem' }}>
+                                            {Array.from({ length: 19 }, (_, i) => 6 + i).map(hour => (
+                                                <div key={hour} className="flex-1 text-right pr-2 border-r border-slate-200">
+                                                    {hour > 23 ? '' : `${hour.toString().padStart(2, '0')}:00`}
                                                 </div>
                                             ))}
                                         </div>
 
-                                        <div className="relative h-96 bg-gradient-to-b from-amber-50 via-cyan-50 to-indigo-100 rounded-lg p-4 space-y-4 flex">
+                                        {/* Timeline container */}
+                                        <div className="relative h-[36rem] w-full bg-slate-50 rounded-lg overflow-hidden">
+                                            {/* Background lines */}
+                                            {Array.from({ length: 18 }, (_, i) => 6 + i + 1).map(hour => (
+                                                <div
+                                                    key={hour}
+                                                    className="absolute left-0 right-0 border-t border-slate-200"
+                                                    style={{ top: `${((hour - 6) / 18) * 100}%` }}
+                                                />
+                                            ))}
+
+                                            {/* Study session blocks */}
                                             {dailyLogs.map((log) => {
                                                 const top = timeToPosition(log.start_time);
-                                                const height = (log.duration_minutes / (18 * 60)) * 150;
+                                                const height = (log.duration_minutes / (18 * 60)) * 100;
+
+                                                // Prevent card from overflowing container
+                                                const finalHeight = Math.min(height, 100 - top);
 
                                                 return (
                                                     <div
                                                         key={log.id}
-                                                        className="relative bg-amber-400 left-4 right-4 rounded-lg shadow-lg p-3 border-l-4 cursor-pointer hover:scale-105 transition-transform"
+                                                        className="absolute z-10 left-2 right-2 rounded-lg p-2 border-l-4 overflow-hidden cursor-pointer hover:scale-[1.01] hover:z-20 transition-all duration-200"
                                                         style={{
                                                             top: `${top}%`,
-                                                            height: `${height}%`,
-                                                            backgroundColor: log.subjects?.color + '20',
-                                                            borderLeftColor: log.subjects?.color
+                                                            height: `${finalHeight}%`,
+                                                            backgroundColor: log.subjects?.color ? `${log.subjects.color}50` : '#a1a1aa33',
+                                                            borderLeftColor: log.subjects?.color || '#a1a1aa',
                                                         }}
+                                                        title={`${log.content} (${formatTime(log.duration_minutes)})`}
                                                     >
-                                                        <div className=" flex items-start justify-between">
-                                                            <div className="flex-1">
-                                                                <h4 className="font-semibold text-sm text-slate-900">{log.content}</h4>
-                                                                <p className="text-xs text-slate-600 mt-1">{log.subjects?.name}</p>
+                                                        <div className="flex justify-between h-full">
+                                                            <div>
+                                                                <h4 className="font-semibold text-xs text-slate-900 truncate">{log.content}</h4>
+                                                                <p className="text-xs text-slate-600 truncate">{log.subjects?.name}</p>
                                                             </div>
-                                                            <div className="text-right">
-                                                                <span className="text-xs font-medium px-2 py-1 rounded-full bg-white/80">
-                                                                    {formatTime(log.duration_minutes)}
-                                                                </span>
+                                                            <div className="text-xs text-slate-600 flex items-center gap-1 flex-col justify-between">
+                                                                <div className='flex flex-row items-center gap-1'>
+                                                                    <Clock className="w-3 h-3" />
+                                                                    {log.start_time}
+                                                                </div>
+                                                                <div className='flex flex-row items-center gap-1'>
+                                                                    <Clock className="w-3 h-3" />
+                                                                    {log.end_time}
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                        <div className="mt-2 text-xs text-slate-600 flex items-center gap-2">
-                                                            <Clock className="w-3 h-3" />
-                                                            <span>{log.start_time} - {log.end_time}</span>
-                                                        </div>
-                                                        {log.notes && (
-                                                            <p className="mt-2 text-xs text-slate-700 italic bg-white/50 rounded p-2">
-                                                                {log.notes}
-                                                            </p>
-                                                        )}
                                                     </div>
                                                 );
                                             })}
-
-                                            {[6, 9, 12, 15, 18, 21].map(hour => (
-                                                <div
-                                                    key={hour}
-                                                    className="absolute left-0 right-0 border-t border-slate-200 border-dashed"
-                                                    style={{ top: `${((hour - 6) / 18) * 100}%` }}
-                                                />
-                                            ))}
                                         </div>
                                     </div>
                                 ) : (

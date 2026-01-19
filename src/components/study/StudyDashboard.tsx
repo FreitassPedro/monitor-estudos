@@ -5,6 +5,7 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, Cart
 import { Clock, BookOpen, Calendar, TrendingUp, Award, Target, Zap, Brain, Coffee, Moon, Sun, CalendarDays, ChevronLeft, ChevronRight, Activity } from 'lucide-react';
 import { StudyBarChart } from './StudyBarChart';
 import { mockStudyLogs, StudyLog } from './mockStudyLog';
+import { sub } from 'date-fns';
 
 
 
@@ -421,10 +422,20 @@ const StudyDashboard: React.FC = () => {
                                             <Tooltip formatter={(value: number) => formatTime(value)} />
                                         </PieChart>
                                     </ResponsiveContainer>
+                                    <div>
+                                        {studiesBySubject.map((subject, index) => (
+                                            <div key={index} className="flex items-center justify-between gap-2 text-sm mt-2">
+                                                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: subject.color || COLORS[index % COLORS.length] }}></span>
+                                                <span>{subject.name}</span>
+                                                <h3 className={`h-1 w-full`} style={{backgroundColor: subject.color || COLORS[index % COLORS.length]}}></h3>
+                                                <span className="text-slate-600">{formatTime(subject.value)} em {subject.sessions} sessões</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </CardContent>
                             </Card>
                         </div>
-                        
+
                         <StudyBarChart />
 
 

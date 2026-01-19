@@ -39,6 +39,8 @@ export function StudySessionForm() {
   const [timeRegisterType, setTimeRegisterType] = useState<'manual' | 'cronometer'>('manual');
   const [cronometerTime, setCronometerTime] = useState(0);
   const [isCronometerRunning, setIsCronometerRunning] = useState(false);
+  const [cronometerStartTime, setCronometerStartTime] = useState<number | null>(null);
+
 
   const today = new Date().toISOString().split('T')[0];
   const now = new Date().toTimeString().slice(0, 5);
@@ -71,9 +73,10 @@ export function StudySessionForm() {
   useEffect(() => {
     let interval: number | undefined;
 
-    if (isCronometerRunning) {
+    if (isCronometerRunning && cronometerStartTime) {
       interval = window.setInterval(() => {
-        setCronometerTime((prev) => prev + 1);
+        const elapsed = Math.floor((Date.now() - cronometerStartTime) / 1000);
+        setCronometerTime(elapsed);
       }, 1000);
     }
 
@@ -82,7 +85,7 @@ export function StudySessionForm() {
         window.clearInterval(interval);
       }
     };
-  }, [isCronometerRunning]);
+  }, [isCronometerRunning, cronometerStartTime]);
 
   const calculateDuration = (start: string, end: string): number => {
     if (!start || !end) return 0;
@@ -103,13 +106,15 @@ export function StudySessionForm() {
     const now = new Date();
     if (!isCronometerRunning) {
       // Starting the timer
+      setCronometerStartTime(now.getTime());
       setValue('start_time', now.toTimeString().slice(0, 5));
+      setValue('end_time', ''); // Clear end time
+      setCronometerTime(0); // Reset timer display
       setIsCronometerRunning(true);
     } else {
       // Stopping the timer
       setIsCronometerRunning(false);
-      const end = new Date(now.getTime() + cronometerTime * 1000);
-      setValue('end_time', end.toTimeString().slice(0, 5));
+      setValue('end_time', now.toTimeString().slice(0, 5));
     }
   };
 
@@ -267,6 +272,7 @@ export function StudySessionForm() {
                         onClick={() => {
                           setIsCronometerRunning(false);
                           setCronometerTime(0);
+                          setCronometerStartTime(null);
                         }}
                       >
                         Fechar

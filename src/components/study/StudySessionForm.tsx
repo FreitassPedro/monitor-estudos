@@ -14,7 +14,7 @@ import { useSubjects } from '@/hooks/useSubjects';
 import { useCreateStudyLog } from '@/hooks/useStudyLogs';
 import { toast } from 'sonner';
 import { Clock, Plus } from 'lucide-react';
-import NewTaskForm from '../todos/NewTaskForm';
+import NewTaskForm from '../tasks/NewTaskForm';
 import { useProjects } from '@/hooks/useProjects';
 import { StudyLog } from '@/types/database';
 

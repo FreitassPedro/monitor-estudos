@@ -1,5 +1,5 @@
 import { localDb } from "./localDb";
-import { mockDataTodoList } from "@/components/todos/mockTodolist";
+import { mockDataTodoList } from "@/components/tasks/mockTodolist";
 
 export const initializeLocalStorageWithMockData = () => {
     if (!localStorage.getItem('projects')) {

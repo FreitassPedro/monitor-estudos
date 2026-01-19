@@ -1,7 +1,7 @@
 import { Layout } from '@/components/layout/Layout';
 import { Navbar } from '@/components/layout/Navbar';
-import { TaskList } from '@/components/todos/TaskList';
-import { TaskListSidebar } from '@/components/todos/TaskListSidebar';
+import { TaskList } from '@/components/tasks/TaskList';
+import { TaskListSidebar } from '@/components/tasks/TaskListSidebar';
 import { useProjects } from '@/hooks/useProjects';
 import React, { useEffect } from 'react';
 

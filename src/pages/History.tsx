@@ -1,4 +1,5 @@
 import { Layout } from '@/components/layout/Layout';
+import StudyDashboard from '@/components/study/StudyDashboard';
 import { StudyHistory } from '@/components/study/StudyHistory';
 
 const History = () => {
@@ -6,6 +7,7 @@ const History = () => {
     <Layout>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-foreground">Histórico de Estudos</h1>
+        <StudyDashboard />
         <StudyHistory />
       </div>
     </Layout>

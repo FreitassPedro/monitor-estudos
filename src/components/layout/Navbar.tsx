@@ -9,6 +9,7 @@ const navItems = [
   { href: '/materias', label: 'Matérias', icon: FolderOpen },
   { href: '/tarefas', label: 'Tarefas', icon: CheckSquare },
   { href: '/reviews', label: 'Revisões', icon: CalendarClock },
+  { href: '/cycle-study', label: 'Ciclos', icon: CalendarClock },
 ];
 
 export function Navbar() {

@@ -427,7 +427,7 @@ const StudyDashboard: React.FC = () => {
                                             <div key={index} className="flex items-center justify-between gap-2 text-sm mt-2">
                                                 <span className="w-3 h-3 rounded-full" style={{ backgroundColor: subject.color || COLORS[index % COLORS.length] }}></span>
                                                 <span>{subject.name}</span>
-                                                <h3 className={`h-1 w-full`} style={{backgroundColor: subject.color || COLORS[index % COLORS.length]}}></h3>
+                                                <h3 className={`h-1 w-full`} style={{ backgroundColor: subject.color || COLORS[index % COLORS.length] }}></h3>
                                                 <span className="text-slate-600">{formatTime(subject.value)} em {subject.sessions} sessões</span>
                                             </div>
                                         ))}

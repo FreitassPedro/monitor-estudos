@@ -48,6 +48,8 @@ export const StudyBarChart = () => {
         new Set(BarChartMock.flatMap(entry => entry.materias.map(m => m.materia)))
     );
 
+    console.log('Chart Data:', allMaterias);
+
     return (
         <Card>
             <CardHeader>

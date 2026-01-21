@@ -20,19 +20,29 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { StudyLog } from '@/types/database';
+import { StudyLog } from '@/types/studyLog';
+import { mockSubjects } from './mockStudyLog';
+import { type SearchRange } from '@/components/history/SearchRange';
 
 interface GroupedLogs {
   [date: string]: StudyLog[];
 }
 
-export function StudyHistory() {
+interface StudyLogsProps {
+  searchRange: SearchRange;
+}
+
+export function StudyLogs({ searchRange }: StudyLogsProps) {
   const { data: logs = [], isLoading } = useStudyLogs();
   const deleteStudyLog = useDeleteStudyLog();
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [viewingLog, setViewingLog] = useState<StudyLog | null>(null);
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
+
+  const findSubjectById = (id: string) => {
+    return mockSubjects.find(subject => subject.id === id);
+  };
 
   // Group logs by date
   const groupedLogs = logs.reduce<GroupedLogs>((acc, log) => {
@@ -134,6 +144,7 @@ export function StudyHistory() {
 
   return (
     <>
+    <h2 className="text-2xl font-bold text-foreground">Histórico de Sessões</h2>
       <div className="space-y-4">
         {sortedDates.map((date) => {
           const dayLogs = groupedLogs[date];
@@ -168,6 +179,8 @@ export function StudyHistory() {
                 </div>
               </CardHeader>
 
+
+
               {isExpanded && (
                 <CardContent className="pt-0">
                   <div className="space-y-3">
@@ -178,13 +191,13 @@ export function StudyHistory() {
                       >
                         <div
                           className="w-3 h-3 rounded-full mt-1.5 shrink-0"
-                          style={{ backgroundColor: log.subjects?.color || '#3B82F6' }}
+                          style={{ backgroundColor: findSubjectById(log.subject_id)?.color || '#3B82F6' }}
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <p className="font-medium text-foreground">
-                                {log.subjects?.name}
+                                'Sem matéria'
                               </p>
                               <p className="text-sm text-muted-foreground">
                                 {log.content}
@@ -259,9 +272,9 @@ export function StudyHistory() {
               <div className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: viewingLog.subjects?.color }}
+                  style={{ backgroundColor: findSubjectById(viewingLog.subject_id)?.color }}
                 />
-                <span className="font-medium">{viewingLog.subjects?.name}</span>
+                <span className="font-medium">{findSubjectById(viewingLog.subject_id)?.name}</span>
                 <span className="text-muted-foreground">•</span>
                 <span className="text-sm text-muted-foreground">{viewingLog.content}</span>
               </div>

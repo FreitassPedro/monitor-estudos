@@ -4,32 +4,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Clock, BookOpen, Calendar, TrendingUp, Award, Target, Zap, Brain, Coffee, Moon, Sun, CalendarDays, ChevronLeft, ChevronRight, Activity } from 'lucide-react';
 import { StudyBarChart } from './StudyBarChart';
-import { mockStudyLogs } from './mockStudyLog';
+import { mockStudyLogs, mockSubjects } from './mockStudyLog';
 import { StudyLog } from '@/types/studyLog';
-import { set } from 'date-fns';
+import { Subject } from '@/types/subject';
 
+import {
+    type SearchRange
 
-interface searchRange {
-    startDate: Date;
-    endDate: Date;
-}
-
+} from './SearchRange';
 const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
-const StudyDashboardCopy: React.FC = () => {
-    const [selectedRange, setSelectedRange] = useState<'day' | 'week' | 'month'>('day');
-    const [searchRange, setSearchRange] = useState<searchRange>({ startDate: new Date('2026-01-18'), endDate: new Date('2026-01-18') });
-    const [selectedDate, setSelectedDate] = useState(new Date('2026-01-18'));
-    const [currentMonth, setCurrentMonth] = useState(new Date('2026-01-18'));
+interface StudyDashboardCopyProps {
+    searchRange: SearchRange;
+    rangeType: 'day' | 'week' | 'month' | 'custom';
+}
 
-    const filterLogsByPeriod = (logs: StudyLog[], period: searchRange, referenceDate: Date = selectedDate) => {
+const StudyDashboardCopy: React.FC<StudyDashboardCopyProps> = ({ searchRange, rangeType }) => {
+    const filterLogsByPeriod = (logs: StudyLog[], period: SearchRange) => {
         return logs.filter(log => {
             const logDate = new Date(log.study_date);
-            const diffTime = referenceDate.getTime() - logDate.getTime();
+            const diffTime = period.startDate.getTime() - logDate.getTime();
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
             if (period.startDate.getDay() === period.endDate.getDay()) {
-                return logDate.toDateString() === referenceDate.toDateString();
+                return logDate.toDateString() === period.startDate.toDateString();
             }
             if (period.startDate.getTime() !== period.endDate.getTime()) {
                 const diffDays = (period.endDate.getTime() - period.startDate.getTime()) / (1000 * 60 * 60 * 24);
@@ -39,14 +37,18 @@ const StudyDashboardCopy: React.FC = () => {
         });
     };
 
+    const findSubjectById = (id: string): Subject => {
+        return mockSubjects.find(subject => subject.id === id)!;
+    }
     const filteredLogs = useMemo(
-        () => filterLogsByPeriod(mockStudyLogs, searchRange, selectedDate),
-        [searchRange, selectedDate]
+        () => filterLogsByPeriod(mockStudyLogs, searchRange),
+        [searchRange]
     );
 
+
     const dailyLogs = useMemo(
-        () => mockStudyLogs.filter(log => new Date(log.study_date).toDateString() === selectedDate.toDateString()),
-        [selectedDate]
+        () => mockStudyLogs.filter(log => new Date(log.study_date).toDateString() === searchRange.startDate?.toDateString()),
+        [searchRange]
     );
 
     const totalMinutes = useMemo(
@@ -61,8 +63,8 @@ const StudyDashboardCopy: React.FC = () => {
         const grouped: Record<string, { name: string; minutes: number; sessions: number; color: string }> = {};
 
         filteredLogs.forEach(log => {
-            const subjectName = log.subjects?.name || 'Sem matéria';
-            const subjectColor = log.subjects?.color || '#94a3b8';
+            const subjectName = findSubjectById(log.subject_id)?.name || 'Sem matéria';
+            const subjectColor = findSubjectById(log.subject_id)?.color || '#94a3b8';
 
             if (!grouped[subjectName]) {
                 grouped[subjectName] = { name: subjectName, minutes: 0, sessions: 0, color: subjectColor };
@@ -100,7 +102,7 @@ const StudyDashboardCopy: React.FC = () => {
 
     const weeklyTrend = useMemo(() => {
         const last7Days = Array.from({ length: 7 }, (_, i) => {
-            const date = new Date(selectedDate);
+            const date = new Date(searchRange.startDate!);
             date.setDate(date.getDate() - (6 - i));
             return date;
         });
@@ -117,7 +119,7 @@ const StudyDashboardCopy: React.FC = () => {
                 sessions: logs.length
             };
         });
-    }, [selectedDate]);
+    }, []);
 
     const consistencyScore = useMemo(() => {
         /*
@@ -126,34 +128,8 @@ const StudyDashboardCopy: React.FC = () => {
         return Math.round((daysWithStudy / totalDays) * 100);
         */
         return 75;
-    }, [filteredLogs, searchRange]);
+    }, [filteredLogs]);
 
-    const handleSelectRange = (range: string) => {
-        let newStartDate: Date;
-        let newEndDate: Date;
-        if (range === 'day') {
-            newStartDate = new Date(selectedDate);
-            newEndDate = new Date(selectedDate);
-        
-            setSelectedRange('day');
-        }
-        if (range === 'week') {
-            newStartDate = new Date(selectedDate);
-            newStartDate.setDate(newStartDate.getDate() - newStartDate.getDay());
-            newEndDate = new Date(newStartDate);
-            newEndDate.setDate(newEndDate.getDate() + 6
-        );
-            setSelectedRange('week');
-        }
-        if (range === 'month') {
-            newStartDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-            newEndDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
-            
-            setSelectedRange('month');
-        }
-
-        setSearchRange({ startDate: newStartDate, endDate: newEndDate });
-    };
 
     const focusScore = useMemo(() => {
         if (totalSessions === 0) return 0;
@@ -165,38 +141,6 @@ const StudyDashboardCopy: React.FC = () => {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    };
-
-    const getDaysInMonth = (date: Date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay();
-
-        const days = [];
-        for (let i = 0; i < startingDayOfWeek; i++) {
-            days.push(null);
-        }
-        for (let i = 1; i <= daysInMonth; i++) {
-            days.push(new Date(year, month, i));
-        }
-        return days;
-    };
-
-    const getStudyMinutesForDate = (date: Date | null) => {
-        if (!date) return 0;
-        const logs = mockStudyLogs.filter(log =>
-            new Date(log.study_date).toDateString() === date.toDateString()
-        );
-        return logs.reduce((sum, log) => sum + log.duration_minutes, 0);
-    };
-
-    const changeMonth = (direction: number) => {
-        const newDate = new Date(currentMonth);
-        newDate.setMonth(newDate.getMonth() + direction);
-        setCurrentMonth(newDate);
     };
 
     const timeToPosition = (time: string) => {
@@ -228,20 +172,13 @@ const StudyDashboardCopy: React.FC = () => {
                     <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-sm border border-slate-200">
                         <Calendar className="w-5 h-5 text-violet-500" />
                         <span className="font-semibold text-slate-700">
-                            {selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                            {searchRange.startDate?.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
                         </span>
                     </div>
                 </div>
 
-                <Tabs value={selectedRange} onValueChange={(v) => handleSelectRange(v)} className="w-full">
-                    <TabsList className="grid w-full max-w-md grid-cols-3 bg-white shadow-sm">
-                        <TabsTrigger value="day">Dia</TabsTrigger>
-                        <TabsTrigger value="week">Semana</TabsTrigger>
-                        <TabsTrigger value="month">Mês</TabsTrigger>
-                    </TabsList>
-
-
-                    <TabsContent value={selectedRange} className="space-y-6 mt-6">
+                <Tabs value={rangeType} className="w-full">
+                    <TabsContent value={rangeType} className="space-y-6 mt-6">
                         {/* 
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="bg-gradient-to-br from-violet-500 to-violet-600 text-white border-0 shadow-lg">
@@ -299,81 +236,6 @@ const StudyDashboardCopy: React.FC = () => {
                         */}
 
                         <div className="grid gap-6 lg:grid-cols-3">
-                            <Card className="lg:col-span-1">
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        <CalendarDays className="w-5 h-5 text-violet-500" />
-                                        Calendário de Atividades
-                                    </CardTitle>
-                                    <CardDescription>Heatmap de intensidade de estudos</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <button
-                                                onClick={() => changeMonth(-1)}
-                                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                                            >
-                                                <ChevronLeft className="w-5 h-5" />
-                                            </button>
-                                            <h3 className="font-semibold text-lg">
-                                                {currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                                            </h3>
-                                            <button
-                                                onClick={() => changeMonth(1)}
-                                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                                            >
-                                                <ChevronRight className="w-5 h-5" />
-                                            </button>
-                                        </div>
-
-                                        <div className="grid grid-cols-7 gap-2">
-                                            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(day => (
-                                                <div key={day} className="text-center text-xs font-medium text-slate-500 pb-2">
-                                                    {day}
-                                                </div>
-                                            ))}
-                                            {getDaysInMonth(currentMonth).map((date, index) => {
-                                                const minutes = getStudyMinutesForDate(date);
-                                                const isSelected = date && date.toDateString() === selectedDate.toDateString();
-
-                                                return (
-                                                    <button
-                                                        key={index}
-                                                        onClick={() => date && setSelectedDate(date)}
-                                                        disabled={!date}
-                                                        className={`
-                                                            aspect-square rounded-lg transition-all
-                                                            ${date ? getHeatmapColor(minutes) : 'bg-transparent'}
-                                                            ${searchRange.startDate <= (date) && searchRange.endDate >= (date) ? ' ring-violet-500 ring-2' : ''}
-                                                            ${isSelected ? 'ring-2 ring-orange-700 scale-110' : ''}
-                                                            ${date ? 'hover:scale-105 cursor-pointer' : ''}
-                                                            flex items-center justify-center
-                                                            `}
-                                                    >
-                                                        {date && (
-                                                            <span className={`text-xs font-medium ${minutes > 120 ? 'text-white' : 'text-slate-700'}`}>
-                                                                {date.getDate()}
-                                                            </span>
-                                                        )}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-
-                                        <div className="flex items-center gap-4 pt-4 border-t">
-                                            <span className="text-xs text-slate-600">Menos</span>
-                                            <div className="flex gap-1">
-                                                {[0, 60, 120, 180, 240].map((mins, i) => (
-                                                    <div key={i} className={`w-4 h-4 rounded ${getHeatmapColor(mins)}`} />
-                                                ))}
-                                            </div>
-                                            <span className="text-xs text-slate-600">Mais</span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="flex items-center gap-2">
@@ -484,7 +346,7 @@ const StudyDashboardCopy: React.FC = () => {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Clock className="w-5 h-5 text-violet-500" />
-                                    Timeline do Dia - {selectedDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
+                                    Timeline do Dia - {searchRange.startDate?.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
                                 </CardTitle>
                                 <CardDescription>
                                     {dailyLogs.length > 0
@@ -531,15 +393,15 @@ const StudyDashboardCopy: React.FC = () => {
                                                         style={{
                                                             top: `${top}%`,
                                                             height: `${finalHeight}%`,
-                                                            backgroundColor: log.subjects?.color ? `${log.subjects.color}50` : '#a1a1aa33',
-                                                            borderLeftColor: log.subjects?.color || '#a1a1aa',
+                                                            backgroundColor: findSubjectById(log.subject_id)?.color ? `${findSubjectById(log.subject_id).color}50` : '#a1a1aa33',
+                                                            borderLeftColor: findSubjectById(log.subject_id)?.color || '#a1a1aa',
                                                         }}
                                                         title={`${log.content} (${formatTime(log.duration_minutes)})`}
                                                     >
                                                         <div className="flex justify-between h-full">
                                                             <div>
                                                                 <h4 className="font-semibold text-xs text-slate-900 truncate">{log.content}</h4>
-                                                                <p className="text-xs text-slate-600 truncate">{log.subjects?.name}</p>
+                                                                <p className="text-xs text-slate-600 truncate">{findSubjectById(log.subject_id)?.name}</p>
                                                             </div>
                                                             <div className="text-xs text-slate-600 flex items-center gap-1 flex-col justify-between">
                                                                 <div className='flex flex-row items-center gap-1'>

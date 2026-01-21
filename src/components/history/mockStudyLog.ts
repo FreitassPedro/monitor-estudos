@@ -1,7 +1,7 @@
 import { StudyLog } from "@/types/studyLog";
 import { Subject } from "@/types/subject";
 
-const mockSubjects: Subject[] = [
+export const mockSubjects: Subject[] = [
     { id: '1', name: 'Matemática', color: '#8b5cf6', created_at: '2026-01-01T00:00:00' },
     { id: '2', name: 'Programação', color: '#06b6d4', created_at: '2026-01-01T00:00:00' },
     { id: '3', name: 'Inglês', color: '#10b981', created_at: '2026-01-01T00:00:00' },
@@ -21,7 +21,6 @@ export const mockStudyLogs: StudyLog[] = [
         notes: 'Revisão de derivadas e integrais',
         created_at: '2026-01-18T09:00:00',
         updated_at: '2026-01-18T11:00:00',
-        subjects: mockSubjects[0]
     },
     {
         id: '2',
@@ -34,7 +33,6 @@ export const mockStudyLogs: StudyLog[] = [
         notes: 'Hooks avançados e custom hooks',
         created_at: '2026-01-18T14:00:00',
         updated_at: '2026-01-18T16:30:00',
-        subjects: mockSubjects[1]
     },
     {
         id: '3',
@@ -47,7 +45,6 @@ export const mockStudyLogs: StudyLog[] = [
         notes: 'Past perfect e conditionals',
         created_at: '2026-01-18T19:00:00',
         updated_at: '2026-01-18T20:30:00',
-        subjects: mockSubjects[2]
     },
     {
         id: '4',
@@ -59,7 +56,6 @@ export const mockStudyLogs: StudyLog[] = [
         duration_minutes: 120,
         created_at: '2026-01-17T08:30:00',
         updated_at: '2026-01-17T10:30:00',
-        subjects: mockSubjects[0]
     },
     {
         id: '5',
@@ -71,7 +67,6 @@ export const mockStudyLogs: StudyLog[] = [
         duration_minutes: 150,
         created_at: '2026-01-17T15:00:00',
         updated_at: '2026-01-17T17:30:00',
-        subjects: mockSubjects[3]
     },
     {
         id: '6',
@@ -83,7 +78,6 @@ export const mockStudyLogs: StudyLog[] = [
         duration_minutes: 180,
         created_at: '2026-01-16T09:00:00',
         updated_at: '2026-01-16T12:00:00',
-        subjects: mockSubjects[1]
     },
     {
         id: '7',
@@ -95,7 +89,6 @@ export const mockStudyLogs: StudyLog[] = [
         duration_minutes: 60,
         created_at: '2026-01-16T14:00:00',
         updated_at: '2026-01-16T15:00:00',
-        subjects: mockSubjects[2]
     },
     {
         id: '8',
@@ -107,6 +100,5 @@ export const mockStudyLogs: StudyLog[] = [
         duration_minutes: 120,
         created_at: '2026-01-15T10:00:00',
         updated_at: '2026-01-15T12:00:00',
-        subjects: mockSubjects[0]
     },
 ];

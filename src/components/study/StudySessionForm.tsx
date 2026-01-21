@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,20 +15,26 @@ import { Clock, Plus } from 'lucide-react';
 import NewTaskForm from '../tasks/NewTaskForm';
 import { useProjects } from '@/hooks/useProjects';
 import { StudyLog } from '@/types/database';
+import { BlockerDialog } from './BlockerDialog';
+import { useTitlePage } from '@/hooks/useTitlePage';
+import { useStudyLogFormProvider } from '@/hooks/useStudySessionForm';
 
-const formSchema = z.object({
-  subject_id: z.string().min(1, 'Selecione uma matéria'),
-  content: z.string().min(1, 'Digite o conteúdo estudado').max(200, 'Máximo 200 caracteres'),
-  study_date: z.string().min(1, 'Selecione a data'),
-  start_time: z.string().min(1, 'Digite a hora de início'),
-  end_time: z.string().min(1, 'Digite a hora de fim'),
-  notes: z.string().max(2000, 'Máximo 2000 caracteres').optional(),
-});
 
-type FormData = z.infer<typeof formSchema>;
+
+export interface StudyLogForm {
+  subject_id: string;
+  content: string;
+  study_date: Date;
+  start_time: Date;
+  end_time: Date;
+  notes?: string;
+  taskId?: string | null;
+  duration: number;
+}
 
 export function StudySessionForm() {
   const navigate = useNavigate();
+  useTitlePage('Nova sessão de estudo');
   const { data: subjects = [], isLoading: loadingSubjects } = useSubjects();
   const { data: projects = [], isLoading: loadingProjects } = useProjects();
   const createStudyLog = useCreateStudyLog();
@@ -38,29 +42,46 @@ export function StudySessionForm() {
 
   const [timeRegisterType, setTimeRegisterType] = useState<'manual' | 'cronometer'>('manual');
   const [cronometerTime, setCronometerTime] = useState(0);
-  const [isCronometerRunning, setIsCronometerRunning] = useState(false);
+  const { isCronometerRunning, setIsCronometerRunning, setSessionFormData } = useStudyLogFormProvider();
   const [cronometerStartTime, setCronometerStartTime] = useState<number | null>(null);
-
-
-  const today = new Date().toISOString().split('T')[0];
-  const now = new Date().toTimeString().slice(0, 5);
-
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      study_date: today,
-      start_time: '',
-      end_time: '',
-      content: '',
-      notes: '',
-    },
-  });
 
   const [viewingNewTaskForm, setViewingNewTaskForm] = useState(false);
   const [createdStudyLog, setCreatedStudyLog] = useState<StudyLog | null>(null);
 
-  const startTime = watch('start_time');
-  const endTime = watch('end_time');
+  const today = new Date();
+  const now = new Date().toTimeString().slice(0, 5);
+
+  const [formData, setFormData] = useState<StudyLogForm>({
+    subject_id: '',
+    content: '',
+    study_date: undefined,
+    start_time: undefined,
+    end_time: undefined,
+    notes: '',
+    duration: 0,
+  });
+
+  useEffect(() => {
+    setSessionFormData(formData);
+  }, [formData, setSessionFormData]);
+
+  const [formErrors, setFormErrors] = useState<z.ZodError['formErrors']['fieldErrors'] | null>(null);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const handleSelectChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, subject_id: value }));
+  };
+
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
   const formatCronometerTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
@@ -87,19 +108,40 @@ export function StudySessionForm() {
     };
   }, [isCronometerRunning, cronometerStartTime]);
 
-  const calculateDuration = (start: string, end: string): number => {
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const hasContent =
+        (formData.content && formData.content.trim() !== '') ||
+        (formData.notes && formData.notes.trim() !== '') ||
+        (formData.start_time && formData.start_time !== undefined) ||
+        (formData.end_time && formData.end_time !== undefined) ||
+        (formData.subject_id && formData.subject_id.trim() !== '') ||
+        isCronometerRunning;
+
+
+      if (hasContent) {
+        e.preventDefault();
+        e.returnValue = 'Você tem uma sessão de estudo em andamento. Deseja realmente sair?';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isCronometerRunning, formData]);
+
+  const calculateDuration = (start: Date, end: Date): number => {
     if (!start || !end) return 0;
-    const [startH, startM] = start.split(':').map(Number);
-    const [endH, endM] = end.split(':').map(Number);
-    const startMinutes = startH * 60 + startM;
-    const endMinutes = endH * 60 + endM;
-    return Math.max(0, endMinutes - startMinutes);
+
+    return Math.floor((end.getTime() - start.getTime()) / 60000); // duration in minutes
   };
 
 
 
   const setCurrentTime = (field: 'start_time' | 'end_time') => {
-    setValue(field, now);
+    setFormData(prev => ({ ...prev, [field]: now }));
   };
 
   const startTiming = () => {
@@ -107,40 +149,70 @@ export function StudySessionForm() {
     if (!isCronometerRunning) {
       // Starting the timer
       setCronometerStartTime(now.getTime());
-      setValue('start_time', now.toTimeString().slice(0, 5));
-      setValue('end_time', ''); // Clear end time
+      setFormData(prev => ({
+        ...prev,
+        start_time: now,
+        end_time: undefined,
+      }));
       setCronometerTime(0); // Reset timer display
       setIsCronometerRunning(true);
     } else {
       // Stopping the timer
       setIsCronometerRunning(false);
-      setValue('end_time', now.toTimeString().slice(0, 5));
+      setFormData(prev => ({ ...prev, end_time: now }));
     }
   };
 
-  const duration = calculateDuration(startTime, endTime);
+  const duration = calculateDuration(formData.start_time, formData.end_time);
 
-  const onSubmit = async (data: FormData) => {
-    const durationMinutes = calculateDuration(data.start_time, data.end_time);
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormErrors(null);
+
+
+    if (formData.start_time === undefined || formData.end_time === undefined) {
+      toast.error('Por favor, corrija os erros no formulário.');
+      return;
+    }
+
+    const durationMinutes = calculateDuration(formData.start_time, formData.end_time);
 
     if (durationMinutes <= 0) {
       toast.error('A hora de fim deve ser maior que a hora de início');
+      setFormErrors(prev => ({ ...prev, end_time: ['A hora de fim deve ser maior que a hora de início'] }));
       return;
     }
 
     try {
       const studyLog = await createStudyLog.mutateAsync({
-        subject_id: data.subject_id,
-        content: data.content,
-        study_date: data.study_date,
-        start_time: data.start_time,
-        end_time: data.end_time,
+        ...formData,
         duration_minutes: durationMinutes,
-        notes: data.notes || undefined,
+        subject_id: formData.subject_id,
+        content: formData.content,
+        study_date: formData.study_date.toISOString().split('T')[0],
+        start_time: formData.start_time.toISOString(),
+        end_time: formData.end_time.toISOString(),
       });
 
       setCreatedStudyLog(studyLog);
       toast.success('Sessão de estudo registrada!');
+
+      // Reset form state
+      setFormData({
+        subject_id: '',
+        content: '',
+        study_date: today,
+        start_time: undefined,
+        end_time: undefined,
+        notes: '',
+        duration: 0,
+      });
+      setCreateTodoAfter(false);
+      if (isCronometerRunning) {
+        setIsCronometerRunning(false);
+        setCronometerTime(0);
+        setCronometerStartTime(null);
+      }
 
       if (createTodoAfter) {
         setViewingNewTaskForm(true);
@@ -160,10 +232,10 @@ export function StudySessionForm() {
           <CardTitle>Nova Sessão de Estudo</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={onSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="subject">Matéria</Label>
-              <Select onValueChange={(value) => setValue('subject_id', value)}>
+              <Select value={formData.subject_id} onValueChange={handleSelectChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione uma matéria" />
                 </SelectTrigger>
@@ -187,8 +259,8 @@ export function StudySessionForm() {
                   )}
                 </SelectContent>
               </Select>
-              {errors.subject_id && (
-                <p className="text-sm text-destructive">{errors.subject_id.message}</p>
+              {formErrors?.subject_id && (
+                <p className="text-sm text-destructive">{formErrors.subject_id[0]}</p>
               )}
               <Button
                 type="button"
@@ -207,10 +279,11 @@ export function StudySessionForm() {
               <Input
                 id="content"
                 placeholder="Ex: Logaritmos, Sistema Nervoso, Phrasal Verbs..."
-                {...register('content')}
+                value={formData.content}
+                onChange={handleInputChange}
               />
-              {errors.content && (
-                <p className="text-sm text-destructive">{errors.content.message}</p>
+              {formErrors?.content && (
+                <p className="text-sm text-destructive">{formErrors.content[0]}</p>
               )}
             </div>
 
@@ -220,10 +293,11 @@ export function StudySessionForm() {
                 <Input
                   id="study_date"
                   type="date"
-                  {...register('study_date')}
+                  value={formData.study_date ? formatDate(formData.study_date) : ''}
+                  onChange={handleInputChange}
                 />
-                {errors.study_date && (
-                  <p className="text-sm text-destructive">{errors.study_date.message}</p>
+                {formErrors?.study_date && (
+                  <p className="text-sm text-destructive">{formErrors.study_date[0]}</p>
                 )}
               </div>
 
@@ -262,7 +336,7 @@ export function StudySessionForm() {
                       <Button
                         type="button"
                         variant={isCronometerRunning ? 'outline' : 'default'}
-                        onClick={() => startTiming()}
+                        onClick={startTiming}
                       >
                         {isCronometerRunning ? 'Parar' : 'Iniciar'}
                       </Button>
@@ -290,7 +364,8 @@ export function StudySessionForm() {
                     id="start_time"
                     type="time"
                     disabled={timeRegisterType === 'cronometer'}
-                    {...register('start_time')}
+                    value={formData.start_time ? formatDate(formData.start_time) : ''}
+                    onChange={handleInputChange}
                     className="flex-1"
                   />
                   <Button
@@ -303,8 +378,8 @@ export function StudySessionForm() {
                     <Clock className="h-4 w-4" />
                   </Button>
                 </div>
-                {errors.start_time && (
-                  <p className="text-sm text-destructive">{errors.start_time.message}</p>
+                {formErrors?.start_time && (
+                  <p className="text-sm text-destructive">{formErrors.start_time[0]}</p>
                 )}
               </div>
 
@@ -315,7 +390,8 @@ export function StudySessionForm() {
                     id="end_time"
                     type="time"
                     disabled={timeRegisterType === 'cronometer'}
-                    {...register('end_time')}
+                    value={formData.end_time ? formatDate(formData.end_time) : ''}
+                    onChange={handleInputChange}
                     className="flex-1"
                   />
                   <Button
@@ -328,8 +404,8 @@ export function StudySessionForm() {
                     <Clock className="h-4 w-4" />
                   </Button>
                 </div>
-                {errors.end_time && (
-                  <p className="text-sm text-destructive">{errors.end_time.message}</p>
+                {formErrors?.end_time && (
+                  <p className="text-sm text-destructive">{formErrors.end_time[0]}</p>
                 )}
               </div>
             </div>
@@ -350,10 +426,11 @@ export function StudySessionForm() {
                 id="notes"
                 placeholder="Resumo, pontos-chave, dúvidas..."
                 rows={4}
-                {...register('notes')}
+                value={formData.notes}
+                onChange={handleInputChange}
               />
-              {errors.notes && (
-                <p className="text-sm text-destructive">{errors.notes.message}</p>
+              {formErrors?.notes && (
+                <p className="text-sm text-destructive">{formErrors.notes[0]}</p>
               )}
             </div>
             <div className="space-y-2">
@@ -408,6 +485,7 @@ export function StudySessionForm() {
           study_log_id={createdStudyLog?.id}
         />
       )}
+      <BlockerDialog />
     </>
   );
 }

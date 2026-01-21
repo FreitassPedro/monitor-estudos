@@ -24,6 +24,8 @@ export interface CreateSubjectInput {
   color: string;
 }
 
+
+
 export interface CreateStudyLogInput {
   id?: string;
   subject_id: string;

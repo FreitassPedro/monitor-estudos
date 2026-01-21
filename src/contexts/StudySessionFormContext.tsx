@@ -1,5 +1,5 @@
 
-import { StudyLogForm } from '@/components/study/StudySessionForm';
+import { StudyLogForm } from '@/components/history/StudySessionForm';
 import { Blocker } from '@remix-run/router';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useBlocker } from 'react-router-dom';

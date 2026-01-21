@@ -1,5 +1,5 @@
 import { Layout } from '@/components/layout/Layout';
-import { StudySessionForm } from '@/components/study/StudySessionForm';
+import { StudySessionForm } from '@/components/history/StudySessionForm';
 
 const NewSession = () => {
   return (

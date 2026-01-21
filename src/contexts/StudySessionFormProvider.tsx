@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { useBlocker } from "react-router-dom";
 import {  StudyLogFormContext } from "./StudySessionFormContext";
-import { StudyLogForm } from "@/components/study/StudySessionForm";
+import { StudyLogForm } from "@/components/history/StudySessionForm";
 
 export const StudyLogFormProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [isCronometerRunning, setIsCronometerRunning] = useState(false);

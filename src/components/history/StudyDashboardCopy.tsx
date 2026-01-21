@@ -4,39 +4,44 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { Clock, BookOpen, Calendar, TrendingUp, Award, Target, Zap, Brain, Coffee, Moon, Sun, CalendarDays, ChevronLeft, ChevronRight, Activity } from 'lucide-react';
 import { StudyBarChart } from './StudyBarChart';
-import { mockStudyLogs, StudyLog } from './mockStudyLog';
-import { sub } from 'date-fns';
+import { mockStudyLogs } from './mockStudyLog';
+import { StudyLog } from '@/types/studyLog';
+import { set } from 'date-fns';
 
 
+interface searchRange {
+    startDate: Date;
+    endDate: Date;
+}
 
 const COLORS = ['#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
 
-
 const StudyDashboardCopy: React.FC = () => {
-    const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month'>('week');
+    const [selectedRange, setSelectedRange] = useState<'day' | 'week' | 'month'>('day');
+    const [searchRange, setSearchRange] = useState<searchRange>({ startDate: new Date('2026-01-18'), endDate: new Date('2026-01-18') });
     const [selectedDate, setSelectedDate] = useState(new Date('2026-01-18'));
     const [currentMonth, setCurrentMonth] = useState(new Date('2026-01-18'));
 
-
-
-    const filterLogsByPeriod = (logs: StudyLog[], period: 'day' | 'week' | 'month', referenceDate: Date = selectedDate) => {
+    const filterLogsByPeriod = (logs: StudyLog[], period: searchRange, referenceDate: Date = selectedDate) => {
         return logs.filter(log => {
             const logDate = new Date(log.study_date);
             const diffTime = referenceDate.getTime() - logDate.getTime();
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-            if (period === 'day') {
+            if (period.startDate.getDay() === period.endDate.getDay()) {
                 return logDate.toDateString() === referenceDate.toDateString();
             }
-            if (period === 'week') return diffDays >= 0 && diffDays < 7;
-            if (period === 'month') return diffDays >= 0 && diffDays < 30;
+            if (period.startDate.getTime() !== period.endDate.getTime()) {
+                const diffDays = (period.endDate.getTime() - period.startDate.getTime()) / (1000 * 60 * 60 * 24);
+                return diffDays >= 0 && diffDays < 30;
+            }
             return true;
         });
     };
 
     const filteredLogs = useMemo(
-        () => filterLogsByPeriod(mockStudyLogs, selectedPeriod, selectedDate),
-        [selectedPeriod, selectedDate]
+        () => filterLogsByPeriod(mockStudyLogs, searchRange, selectedDate),
+        [searchRange, selectedDate]
     );
 
     const dailyLogs = useMemo(
@@ -115,10 +120,40 @@ const StudyDashboardCopy: React.FC = () => {
     }, [selectedDate]);
 
     const consistencyScore = useMemo(() => {
+        /*
         const daysWithStudy = new Set(filteredLogs.map(log => log.study_date)).size;
         const totalDays = selectedPeriod === 'day' ? 1 : selectedPeriod === 'week' ? 7 : 30;
         return Math.round((daysWithStudy / totalDays) * 100);
-    }, [filteredLogs, selectedPeriod]);
+        */
+        return 75;
+    }, [filteredLogs, searchRange]);
+
+    const handleSelectRange = (range: string) => {
+        let newStartDate: Date;
+        let newEndDate: Date;
+        if (range === 'day') {
+            newStartDate = new Date(selectedDate);
+            newEndDate = new Date(selectedDate);
+        
+            setSelectedRange('day');
+        }
+        if (range === 'week') {
+            newStartDate = new Date(selectedDate);
+            newStartDate.setDate(newStartDate.getDate() - newStartDate.getDay());
+            newEndDate = new Date(newStartDate);
+            newEndDate.setDate(newEndDate.getDate() + 6
+        );
+            setSelectedRange('week');
+        }
+        if (range === 'month') {
+            newStartDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+            newEndDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0);
+            
+            setSelectedRange('month');
+        }
+
+        setSearchRange({ startDate: newStartDate, endDate: newEndDate });
+    };
 
     const focusScore = useMemo(() => {
         if (totalSessions === 0) return 0;
@@ -198,14 +233,16 @@ const StudyDashboardCopy: React.FC = () => {
                     </div>
                 </div>
 
-                <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)} className="w-full">
+                <Tabs value={selectedRange} onValueChange={(v) => handleSelectRange(v)} className="w-full">
                     <TabsList className="grid w-full max-w-md grid-cols-3 bg-white shadow-sm">
                         <TabsTrigger value="day">Dia</TabsTrigger>
                         <TabsTrigger value="week">Semana</TabsTrigger>
                         <TabsTrigger value="month">Mês</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value={selectedPeriod} className="space-y-6 mt-6">
+
+                    <TabsContent value={selectedRange} className="space-y-6 mt-6">
+                        {/* 
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                             <Card className="bg-gradient-to-br from-violet-500 to-violet-600 text-white border-0 shadow-lg">
                                 <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -259,6 +296,7 @@ const StudyDashboardCopy: React.FC = () => {
                                 </CardContent>
                             </Card>
                         </div>
+                        */}
 
                         <div className="grid gap-6 lg:grid-cols-3">
                             <Card className="lg:col-span-1">
@@ -307,7 +345,8 @@ const StudyDashboardCopy: React.FC = () => {
                                                         className={`
                                                             aspect-square rounded-lg transition-all
                                                             ${date ? getHeatmapColor(minutes) : 'bg-transparent'}
-                                                            ${isSelected ? 'ring-2 ring-violet-500 scale-110' : ''}
+                                                            ${searchRange.startDate <= (date) && searchRange.endDate >= (date) ? ' ring-violet-500 ring-2' : ''}
+                                                            ${isSelected ? 'ring-2 ring-orange-700 scale-110' : ''}
                                                             ${date ? 'hover:scale-105 cursor-pointer' : ''}
                                                             flex items-center justify-center
                                                             `}

@@ -1,27 +1,11 @@
-export interface Subject {
-    id: string;
-    name: string;
-    color?: string;
-}
+import { StudyLog } from "@/types/studyLog";
+import { Subject } from "@/types/subject";
 
-export interface StudyLog {
-    id: string;
-    subject_id: string;
-    content: string;
-    study_date: string;
-    start_time: string;
-    end_time: string;
-    duration_minutes: number;
-    notes?: string;
-    created_at: string;
-    updated_at: string;
-    subjects?: Subject;
-}
 const mockSubjects: Subject[] = [
-    { id: '1', name: 'Matemática', color: '#8b5cf6' },
-    { id: '2', name: 'Programação', color: '#06b6d4' },
-    { id: '3', name: 'Inglês', color: '#10b981' },
-    { id: '4', name: 'Física', color: '#f59e0b' },
+    { id: '1', name: 'Matemática', color: '#8b5cf6', created_at: '2026-01-01T00:00:00' },
+    { id: '2', name: 'Programação', color: '#06b6d4', created_at: '2026-01-01T00:00:00' },
+    { id: '3', name: 'Inglês', color: '#10b981', created_at: '2026-01-01T00:00:00' },
+    { id: '4', name: 'Física', color: '#f59e0b', created_at: '2026-01-01T00:00:00' },
 ];
     
 
